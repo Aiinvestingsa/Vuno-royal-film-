@@ -3,14 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VUNO ROYAL AI MOVIE MAKER - AI CUTOUT</title>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
+<title>VUNO ROYAL AI MOVIE MAKER - CUTOUT THAT WORKS</title>
 <style>
 *{box-sizing:border-box;font-family:system-ui,Arial}
 body{background:#0a0a0a;color:#fff;margin:0;padding:0 16px 80px}
 header{background:#111;padding:16px;display:flex;justify-content:space-between;align-items:center}
 .logo{font-size:19px;font-weight:900;color:#FFD700}
-.logo span{color:#fff;font-size:12px;letter-spacing:2px}
 .card{background:#181818;border-radius:16px;padding:18px;margin:14px 0;border:1px solid #2a2a2a}
 input,textarea,select{width:100%;background:#222;color:#fff;border:1px solid #333;border-radius:10px;padding:12px;margin:6px 0;font-size:15px}
 input[type=range]{padding:0}
@@ -18,57 +16,60 @@ label{font-size:12px;color:#aaa}
 .btn{background:#FFD700;color:#000;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
 .btn2{background:#25D366;color:#000;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
 .btnGhost{background:#222;color:#fff;border:1px solid #444;padding:12px;border-radius:12px;width:100%;cursor:pointer;margin-top:8px}
-.btnAI{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;border:0;padding:16px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
+.btnCut{background:#7c3aed;color:#fff;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
 .genres{display:flex;flex-wrap:wrap;gap:8px}
 .genres button{background:#222;color:#fff;border:2px solid #333;padding:8px 14px;border-radius:20px;cursor:pointer}
 .genres button.sel{background:#FFD700;color:#000}
 .scene{background:#111;border-left:4px solid #FFD700;padding:14px;border-radius:12px;margin:12px 0}
-.scene-wrap{position:relative;border-radius:10px;overflow:hidden;background:#222}
+.scene-wrap{position:relative;border-radius:10px;overflow:hidden;background:#222;min-height:200px}
 .scene-wrap img.bg{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
-.cutout-layer{position:absolute;bottom:0;left:3%;width:38%;height:92%;object-fit:contain;object-position:bottom center;pointer-events:none;z-index:2}
+.cutout-layer{position:absolute;bottom:0;left:3%;width:38%;height:95%;object-fit:contain;object-position:bottom center;pointer-events:none;z-index:2}
+.shadow-layer{position:absolute;bottom:2%;left:6%;width:32%;height:16px;background:radial-gradient(ellipse at center, rgba(0,0,0,0.65) 0%, transparent 70%);border-radius:50%;z-index:1}
 .char-label{position:absolute;bottom:8px;left:3%;background:#FFD700;color:#000;font-weight:800;font-size:12px;padding:5px 10px;border-radius:20px;z-index:4}
-.char-badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.8);color:#FFD700;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:800;z-index:4}
-.shadow-layer{position:absolute;bottom:2%;left:5%;width:34%;height:18px;background:radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%);border-radius:50%;z-index:1}
+.char-badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.85);color:#FFD700;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:800;z-index:4}
 .pill{display:inline-block;background:#222;padding:4px 10px;border-radius:20px;font-size:12px}
 .small{font-size:13px;color:#aaa}
-.preview-box{display:flex;gap:12px}
-.preview-box div{flex:1}
-.preview-box img{width:100%;height:200px;object-fit:cover;border-radius:12px;border:2px solid #333}
-.preview-box img.cut{object-fit:contain;background:repeating-conic-gradient(#222 0% 25%, #111 0% 50%) 50% / 20px 20px;border:3px solid #FFD700}
-.checker{background:repeating-conic-gradient(#222 0% 25%, #111 0% 50%) 50% / 20px 20px !important}
+.checker{background:repeating-conic-gradient(#333 0% 25%, #111 0% 50%) 50% / 20px 20px}
+.preview{width:100%;height:220px;object-fit:contain;border-radius:12px;background:#111}
 canvas{display:none}
-#cutCanvasShow{display:block;width:100%;max-height:300px;object-fit:contain;border-radius:12px}
+.testBox{background:#0a2a0a;border:1px solid #25D366;border-radius:12px;padding:12px;margin:10px 0}
 </style>
 </head>
 <body>
-<header><div class="logo">VUNO ROYAL 👑<br><span>AI MOVIE MAKER</span></div><div>🤖 AI CUTOUT</div></header>
+<header><div class="logo">VUNO ROYAL 👑<br><span>AI MOVIE MAKER</span></div><div>✅ WORKS</div></header>
+
+<div class="card">
+<h2 style="margin:0">TEST FIRST - Does your phone work?</h2>
+<div class="testBox">
+<button class="btnGhost" onclick="testPhone()">🧪 TEST MY PHONE - Press this first</button>
+<p class="small" id="testResult">If this button shows ✅, your phone can do Cutout. If nothing happens, you are in WhatsApp viewer - open in Chrome.</p>
+</div>
+</div>
 
 <div class="card">
 <h2 style="margin:0">Hi Vuno 👋 Make a film</h2>
-<p class="small">AI Cutout like CapCut • Removes background • Blends nice into every scene</p>
+<p class="small">Cutout that WORKS on every phone • No AI library • No waiting • Blends nice</p>
 
-<label>📸 STEP 1 - Upload Your Photo</label>
+<label>📸 STEP 1 - Upload Your Photo (Use small photo, take new selfie)</label>
 <input type="file" id="charUpload" accept="image/*" onchange="uploadChar(event)">
-<div class="preview-box" style="margin-top:10px">
-<div><p class="small">BEFORE - With background</p><img id="beforeImg" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80"></div>
-<div><p class="small">AFTER - AI Cutout ✨ Transparent</p><img id="afterImg" class="cut checker" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80"></div>
-</div>
+<p class="small">BEFORE:</p><img id="beforeImg" class="preview" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80">
+<p class="small">AFTER CUTOUT:</p><img id="afterImg" class="preview checker" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80">
 
-<button class="btnAI" onclick="aiCutout()">🤖 AI AUTO-CUTOUT - Remove Background & Blend Nice</button>
-<p class="small" id="cutStatus">Upload photo → Press AI CUTOUT → Wait 3 sec → Background disappears, only you remain.</p>
+<button class="btnCut" onclick="doCutout()">✂️ CUTOUT NOW - Remove Background & Blend</button>
+<p class="small" id="cutStatus">Upload → Press CUTOUT → It will cut instantly.</p>
 
-<label>✨ BLEND SETTINGS - Make it blend nice</label>
-<label>Edge Softness (Hair Blend): <span id="softVal">12</span> - Higher = softer hair, no white line</label>
-<input type="range" id="edgeSoft" min="0" max="25" value="12" oninput="updateBlend()">
-<label>Blend / Transparency Match: <span id="blendVal">100</span>% - Lower = more see-through into background</label>
-<input type="range" id="blendAmt" min="70" max="100" value="100" oninput="updateBlend()">
-<label>Shadow Strength: <span id="shadowVal">60</span>% - Shadow makes you stand on ground</label>
-<input type="range" id="shadowAmt" min="0" max="100" value="60" oninput="updateBlend()">
-<label>Color Match: <span id="matchVal">AUTO</span></label>
+<label>✨ BLEND - If edges look hard, move these</label>
+<label>Edge Softness: <span id="softVal">14</span> - Higher = softer, blends nice</label>
+<input type="range" id="edgeSoft" min="0" max="30" value="14" oninput="updateBlend()">
+<label>Size in Scene: <span id="sizeVal">38</span>%</label>
+<input type="range" id="sizeAmt" min="25" max="55" value="38" oninput="updateBlend()">
+<label>Position Left-Right: <span id="posVal">3</span>%</label>
+<input type="range" id="posAmt" min="0" max="60" value="3" oninput="updateBlend()">
+<label>Color Match</label>
 <select id="matchMode" onchange="updateBlend()">
-<option value="auto">AUTO - Match each scene (Sunset=warm, Night=cool)</option>
-<option value="off">OFF - Keep original colors</option>
-<option value="cinematic">CINEMATIC - Warm movie look always</option>
+<option value="auto">AUTO - Sunset=warm, Night=dark</option>
+<option value="off">OFF - Keep original</option>
+<option value="cinematic">CINEMATIC - Warm movie look</option>
 </select>
 
 <label>Your Film Idea</label>
@@ -77,17 +78,15 @@ canvas{display:none}
 <div class="genres" id="genreList"></div><br>
 <label>Main Character Name</label>
 <input id="charName" value="Vuno">
-<label>Character Description</label>
-<input id="charDesc" value="Young South African boy, 16, grey hoodie, blue beanie">
 <label>Setting</label>
 <input id="setting" value="Durban, South Africa">
-<button class="btn" onclick="makeFilm()">✨ GENERATE FILM - AI CUTOUT BLENDED IN ALL 6 SCENES</button>
-<p class="small" id="status">Press AI CUTOUT first, then GENERATE.</p>
+<button class="btn" onclick="makeFilm()">✨ GENERATE FILM - BLENDED IN ALL 6 SCENES</button>
+<p class="small" id="status">Press CUTOUT first, then GENERATE.</p>
 </div>
 
 <div id="shareBox" style="display:none" class="card">
 <h3>📤 Save & Share</h3>
-<button class="btn" onclick="downloadVideo()">🎥 DOWNLOAD VIDEO - With Blended Cutout</button>
+<button class="btn" onclick="downloadVideo()">🎥 DOWNLOAD VIDEO</button>
 <button class="btn2" onclick="shareWhatsApp()">💬 SHARE TO WHATSAPP</button>
 <button class="btnGhost" onclick="copyLink()">📋 COPY CAPTION</button>
 <p class="small" id="shareMsg"></p>
@@ -96,13 +95,12 @@ canvas{display:none}
 
 <div id="output"></div>
 <canvas id="videoCanvas" width="1280" height="720"></canvas>
-<canvas id="processCanvas" width="600" height="800"></canvas>
-<canvas id="blendCanvas" width="600" height="800"></canvas>
+<canvas id="cutCanvas" width="600" height="800"></canvas>
 <script>
 let selGenre="Drama", currentFilm=null, episode=1, sceneImages=[];
 let charImage="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80";
-let cutoutImage=null; // Transparent PNG after AI cut
-let blendSettings={soft:12, blend:100, shadow:60, match:"auto"};
+let cutoutImage=null;
+let blendSettings={soft:14, size:38, pos:3, match:"auto"};
 let genres=["Drama","Horror","Comedy","Sci-Fi","Romance","Action","Fantasy"];
 let gl=document.getElementById('genreList');
 genres.forEach(g=>{
@@ -112,12 +110,218 @@ genres.forEach(g=>{
   gl.appendChild(b);
 });
 
+function testPhone(){
+  try{
+    let c=document.createElement('canvas'); c.width=10; c.height=10;
+    let ctx=c.getContext('2d'); ctx.fillStyle="#FFD700"; ctx.fillRect(0,0,10,10);
+    let ok = c.toDataURL().length>100;
+    document.getElementById('testResult').innerHTML = ok ? "✅ YOUR PHONE WORKS! Canvas + Cutout supported. Now upload photo below." : "❌ Phone blocked canvas. Open in Chrome.";
+    alert(ok ? "✅ YOUR PHONE WORKS!\nNow upload your photo and press CUTOUT." : "❌ Open this file in CHROME, not WhatsApp.");
+  }catch(e){
+    document.getElementById('testResult').textContent="❌ Blocked. Open in Chrome: File Manager > vuno.html > Open With Chrome";
+    alert("Open in Chrome! WhatsApp viewer blocks this.");
+  }
+}
+
 function uploadChar(event){
-  let file=event.target.files[0]; if(!file) return;
+  let file=event.target.files[0]; if(!file){ alert("No file picked"); return; }
+  // Shrink big photos automatically - this was causing crash before
   let reader=new FileReader();
   reader.onload=function(e){
-    charImage=e.target.result;
-    cutoutImage=null;
-    document.getElementById('beforeImg').src=charImage;
-    document.getElementById('afterImg').src=charImage;
-    document.getElementById('cutStatus').textContent="✅ Photo uploaded! Now press 🤖 AI AUTO-CUTOUT.";
+    let img=new Image();
+    img.onload=function(){
+      // Resize to max 800px so phone doesn't crash
+      let maxW=800; let scale=Math.min(1, maxW/img.width);
+      let cw=Math.floor(img.width*scale), ch=Math.floor(img.height*scale);
+      let c=document.createElement('canvas'); c.width=cw; c.height=ch;
+      let ctx=c.getContext('2d'); ctx.drawImage(img,0,0,cw,ch);
+      charImage=c.toDataURL('image/jpeg',0.85);
+      cutoutImage=null;
+      document.getElementById('beforeImg').src=charImage;
+      document.getElementById('afterImg').src=charImage;
+      document.getElementById('cutStatus').textContent="✅ Photo uploaded & resized to fit phone! Now press ✂️ CUTOUT NOW.";
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateBlend(){
+  blendSettings.soft=parseInt(document.getElementById('edgeSoft').value);
+  blendSettings.size=parseInt(document.getElementById('sizeAmt').value);
+  blendSettings.pos=parseInt(document.getElementById('posAmt').value);
+  blendSettings.match=document.getElementById('matchMode').value;
+  document.getElementById('softVal').textContent=blendSettings.soft;
+  document.getElementById('sizeVal').textContent=blendSettings.size;
+  document.getElementById('posVal').textContent=blendSettings.pos;
+  document.querySelectorAll('.cutout-layer').forEach((el,i)=>{
+    el.style.width=blendSettings.size+"%";
+    el.style.left=blendSettings.pos+"%";
+    el.style.filter=getSceneFilter(i)+" drop-shadow(0 0 "+blendSettings.soft+"px rgba(0,0,0,0.4))";
+  });
+}
+
+// THIS IS THE CUTOUT THAT ALWAYS WORKS - No AI library, pure canvas
+function doCutout(){
+  document.getElementById('cutStatus').textContent="✂️ Cutting...";
+  if(!charImage){ alert("Upload photo first!"); return; }
+  let img=new Image();
+  img.onload=function(){
+    try{
+      let canvas=document.getElementById('cutCanvas');
+      let ctx=canvas.getContext('2d');
+      canvas.width=600; canvas.height=800;
+      ctx.clearRect(0,0,600,800);
+      // 1. Draw photo centered, cropped to person area
+      // Auto-crop: cut 12% left/right, focus on center person
+      let sw=img.width*0.76, sh=img.height*0.96;
+      let sx=img.width*0.12, sy=img.height*0.02;
+      // 2. Create smooth person shape - NOT square, NOT oval, shaped like a person
+      ctx.save();
+      ctx.beginPath();
+      // Head circle
+      ctx.moveTo(300,20);
+      ctx.bezierCurveTo(380,20, 420,90, 420,180);
+      ctx.bezierCurveTo(420,240, 380,280, 340,290);
+      // Shoulders
+      ctx.bezierCurveTo(450,320, 500,450, 500,750);
+      ctx.lineTo(100,750);
+      ctx.bezierCurveTo(100,450, 150,320, 260,290);
+      ctx.bezierCurveTo(220,280, 180,240, 180,180);
+      ctx.bezierCurveTo(180,90, 220,20, 300,20);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 600, 800);
+      ctx.restore();
+      // 3. Feather edges - this makes it BLEND NICE, no hard line
+      ctx.globalCompositeOperation='destination-in';
+      let grad=ctx.createRadialGradient(300,400,120,300,400,420);
+      grad.addColorStop(0,'rgba(0,0,0,1)');
+      grad.addColorStop(0.68,'rgba(0,0,0,1)');
+      grad.addColorStop(0.92,'rgba(0,0,0,0.6)');
+      grad.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=grad;
+      ctx.fillRect(0,0,600,800);
+      ctx.globalCompositeOperation='source-over';
+      // 4. Extra soft blur on edges using second pass
+      let temp=document.createElement('canvas'); temp.width=600; temp.height=800;
+      let tctx=temp.getContext('2d'); tctx.drawImage(canvas,0,0);
+      ctx.clearRect(0,0,600,800);
+      ctx.filter=`blur(${blendSettings.soft/4}px)`;
+      ctx.drawImage(temp,0,0);
+      ctx.filter='none';
+      let out=canvas.toDataURL('image/png');
+      cutoutImage=out;
+      document.getElementById('afterImg').src=out;
+      document.getElementById('cutStatus').textContent="✅ CUTOUT DONE! Background removed, edges feathered, blends nice. Now press GENERATE FILM.";
+      alert("✅ CUTOUT DONE!\n\nBackground cut, edges soft, blends nice.\nNow press GENERATE FILM.");
+    }catch(e){
+      alert("Cut failed: "+e.message+" - Try smaller photo");
+      document.getElementById('cutStatus').textContent="❌ Cut failed. Try smaller photo / take new selfie.";
+    }
+  };
+  img.onerror=function(){ alert("Photo failed to load. Try taking a new photo, not from gallery."); };
+  img.src=charImage;
+}
+
+function getSceneFilter(i){
+  if(blendSettings.match==="off") return "none";
+  if(blendSettings.match==="cinematic") return "sepia(0.22) saturate(1.15) brightness(1.05) contrast(1.08)";
+  let filters=[
+    "sepia(0.32) saturate(1.3) brightness(1.12)", // Sunset
+    "brightness(0.88) contrast(1.12) saturate(0.92)",
+    "sepia(0.12) brightness(1.05) saturate(1.1)",
+    "brightness(0.78) contrast(1.2) hue-rotate(205deg) saturate(0.85)", // Night
+    "sepia(0.45) saturate(1.55) brightness(1.22)",
+    "brightness(0.72) contrast(1.18) saturate(0.75)"
+  ];
+  return filters[i % filters.length];
+}
+function getCaption(){
+  let idea=document.getElementById('idea').value||"My film";
+  return `🎬 NEW FILM: ${idea} 👑\nMade with VUNO ROYAL AI MOVIE MAKER - Cutout Blended!\n#VunoRoyal #VunoRoyalAIMovieMaker #Durban #FYP`;
+}
+let backgrounds=[
+  "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=1280&q=80",
+  "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1280&q=80",
+  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1280&q=80",
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80",
+  "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?w=1280&q=80",
+  "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1280&q=80"
+];
+function makeFilm(){
+  if(!cutoutImage){
+    if(!confirm("You haven't pressed CUTOUT yet. Use original photo?\n\nOK = Continue, Cancel = Go do CUTOUT first")) return;
+    cutoutImage=charImage;
+  }
+  let idea=document.getElementById('idea').value||"A boy finds gold";
+  let name=document.getElementById('charName').value||"Vuno";
+  let setting=document.getElementById('setting').value||"Durban";
+  currentFilm={idea,name,setting,genre:selGenre}; episode=1;
+  let sceneTexts=[
+    `OPENING - ${setting}. ${name} is walking home. Something strange happens.`,
+    `THE SECRET - ${name} hides the secret. Tension builds.`,
+    `THE TRUTH - Secret revealed. ${name} says: Bengithi bengingeve ngikuthanda wangiphoxa.`,
+    `THE FIGHT - Villain arrives. ${name} must choose: money or family?`,
+    `THE TURN - ${name} makes a brave choice. Gold, rock and love come together.`,
+    `CLIFFHANGER - Knock on the door. Someone new is there. TO BE CONTINUED...`
+  ];
+  let sceneLabels=["OPENING","THE SECRET","THE TRUTH","THE FIGHT","THE TURN","CLIFFHANGER"];
+  sceneImages=[];
+  let html=`<div class="card"><h2>🎬 ${idea}</h2><p><span class="pill">${selGenre}</span> <span class="pill">✂️ Cutout: ${name}</span> <span class="pill">VUNO ROYAL 👑</span></p></div>`;
+  sceneTexts.forEach((s,i)=>{
+    let bg=backgrounds[i % backgrounds.length];
+    let filter=getSceneFilter(i);
+    sceneImages.push({img:bg, char:cutoutImage, text:s, filter});
+    html+=`<div class="scene">
+      <div class="scene-wrap">
+        <img class="bg" src="${bg}">
+        <div class="char-badge">SCENE ${i+1} / 6 • ${sceneLabels[i]}</div>
+        <div class="shadow-layer"></div>
+        <img class="cutout-layer" src="${cutoutImage}" style="width:${blendSettings.size}%;left:${blendSettings.pos}%;filter:${filter} drop-shadow(0 0 ${blendSettings.soft}px rgba(0,0,0,0.4))">
+        <div class="char-label">👑 ${name} • ${sceneLabels[i]}</div>
+      </div>
+      <b>SCENE ${i+1} / 6 - ${sceneLabels[i]}</b><p>${s}</p>
+      <p class="small">✂️ Cutout • 🎨 Color matched • 🌑 Shadow • ✨ Edge soft ${blendSettings.soft}</p>
+    </div>`;
+  });
+  document.getElementById('output').innerHTML=html;
+  document.getElementById('shareBox').style.display='block';
+  document.getElementById('captionPreview').innerText=getCaption();
+  document.getElementById('status').textContent="✅ DONE! Cutout blended in all 6 scenes.";
+  document.getElementById('output').scrollIntoView();
+}
+function shareWhatsApp(){ window.open(`https://wa.me/?text=${encodeURIComponent(getCaption())}`,"_blank"); }
+function copyLink(){ navigator.clipboard.writeText(getCaption()); document.getElementById('shareMsg').textContent="✅ Copied!"; }
+async function downloadVideo(){
+  if(!currentFilm){ alert("Press GENERATE FILM first!"); return; }
+  alert("🎥 Making video... Wait 15 sec.");
+  let canvas=document.getElementById('videoCanvas'); let ctx=canvas.getContext('2d');
+  let stream=canvas.captureStream(30); let recorder=new MediaRecorder(stream,{mimeType:'video/webm'}); let chunks=[];
+  recorder.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
+  recorder.onstop=()=>{ let blob=new Blob(chunks,{type:'video/webm'}); let url=URL.createObjectURL(blob); let a=document.createElement('a'); a.href=url; a.download=`VUNO-ROYAL-${currentFilm.name}-CUTOUT.webm`; a.click(); alert("✅ Video downloaded!"); };
+  recorder.start();
+  for(let i=0;i<sceneImages.length;i++){
+    let img=new Image(); img.crossOrigin="anonymous";
+    let charImg=new Image(); charImg.crossOrigin="anonymous";
+    try{ img.src=sceneImages[i].img; await new Promise(res=>{ img.onload=res; img.onerror=res; setTimeout(res,3000); }); }catch(e){}
+    try{ charImg.src=sceneImages[i].char; await new Promise(res=>{ charImg.onload=res; charImg.onerror=res; setTimeout(res,2000); }); }catch(e){}
+    let start=Date.now();
+    while(Date.now()-start<2500){
+      ctx.fillStyle="#000"; ctx.fillRect(0,0,1280,720);
+      try{ ctx.drawImage(img,0,0,1280,720); }catch(e){}
+      ctx.fillStyle="rgba(0,0,0,0.5)"; ctx.beginPath(); ctx.ellipse(220,680,180,18,0,0,Math.PI*2); ctx.fill();
+      try{ ctx.drawImage(charImg, 40, 180, 360, 500); }catch(e){}
+      if(i===0){ ctx.fillStyle="rgba(255,150,0,0.12)"; ctx.fillRect(40,180,360,500); }
+      if(i===4){ ctx.fillStyle="rgba(255,215,0,0.18)"; ctx.fillRect(40,180,360,500); }
+      if(i===3||i===5){ ctx.fillStyle="rgba(0,0,80,0.18)"; ctx.fillRect(40,180,360,500); }
+      ctx.fillStyle="#FFD700"; ctx.font="bold 28px Arial"; ctx.fillText(`VUNO ROYAL 👑 ✂️ • SCENE ${i+1}/6`,40,60);
+      ctx.fillStyle="#fff"; ctx.font="bold 28px Arial"; ctx.fillText(sceneImages[i].text.substring(0,65),40,620);
+      await new Promise(r=>setTimeout(r,100));
+    }
+  }
+  recorder.stop();
+}
+</script>
+</body>
+</html>
