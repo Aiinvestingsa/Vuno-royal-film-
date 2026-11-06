@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VUNO ROYAL AI MOVIE MAKER - Turn 1 Idea Into A Film</title>
+<style>
+*{box-sizing:border-box;font-family:system-ui,Arial}
+body{background:#0a0a0a;color:#fff;margin:0}
+header{background:#111;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.logo{font-size:19px;font-weight:900;color:#FFD700;line-height:1.1}.logo span{color:#fff;font-size:13px;letter-spacing:2px}
+.credits{background:#FFD700;color:#000;padding:6px 12px;border-radius:20px;font-weight:700;font-size:13px}
+nav{display:flex;gap:8px;padding:12px 20px;overflow-x:auto}
+nav button{background:#222;color:#fff;border:0;padding:10px 16px;border-radius:20px;cursor:pointer;white-space:nowrap}
+nav button.active{background:#FFD700;color:#000}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px 80px}
+.card{background:#181818;border-radius:16px;padding:18px;margin:14px 0;border:1px solid #2a2a2a}
+input,textarea,select{width:100%;background:#222;color:#fff;border:1px solid #333;border-radius:10px;padding:12px;margin:6px 0;font-size:15px}
+label{font-size:12px;color:#aaa;text-transform:uppercase;letter-spacing:1px}
+.btn{background:#FFD700;color:#000;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
+.btn2{background:#25D366;color:#000;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
+.btn3{background:#fff;color:#000;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
+.btnGhost{background:#222;color:#fff;border:1px solid #444;padding:12px;border-radius:12px;font-weight:700;width:100%;cursor:pointer;margin-top:8px}
+.btnDanger{background:#331111;color:#ff8888;border:1px solid #552222;padding:8px 12px;border-radius:8px;cursor:pointer}
+.genres,.styleRow{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.genres button,.styleRow button{background:#222;color:#fff;border:2px solid #333;padding:8px 14px;border-radius:20px;cursor:pointer}
+.genres button.sel,.styleRow button.sel{background:#FFD700;color:#000}
+.scene{background:#111;border-left:4px solid #FFD700;padding:14px;border-radius:12px;margin:12px 0}
+.scene img{width:100%;border-radius:10px;aspect-ratio:16/9;object-fit:cover;background:#222}
+.scene b{color:#FFD700}
+.pill{display:inline-block;background:#222;padding:4px 10px;border-radius:20px;font-size:12px;margin:2px}
+.small{font-size:13px;color:#aaa}
+.char{width:56px;height:56px;border-radius:50%;background:#FFD700;color:#000;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900}
+.flex{display:flex;gap:12px;align-items:center}
+.shareBox{background:#0a2a0a;border:1px solid #25D366;border-radius:12px;padding:14px;margin:12px 0}
+.progress{height:8px;background:#222;border-radius:20px;overflow:hidden;margin:10px 0}
+.progress div{height:100%;background:#FFD700;width:0%;transition:width .3s}
+.loginBox{background:linear-gradient(135deg,#1a1500,#111);border:1px solid #FFD700;border-radius:16px;padding:20px;margin:14px 0}
+.badgeSaved{background:#00aa55;color:#fff;padding:4px 10px;border-radius:20px;font-size:12px}
+canvas{display:none}
+</style>
+</head>
+<body>
+<header><div class="logo">VUNO ROYAL 👑<br><span>AI MOVIE MAKER</span></div><div><span class="credits">⭐ <span id="creditCount">180</span></span> <span class="pill" id="userPill">Not logged in</span></div></header>
+
+<div id="loginScreen" class="wrap" style="padding-top:20px">
+<div class="loginBox">
+<h1 style="margin:0;font-size:28px">Welcome to<br><span style="color:#FFD700">VUNO ROYAL 👑</span><br><span style="font-size:18px;letter-spacing:2px">AI MOVIE MAKER</span></h1>
+<p>Turn 1 idea into a film. Your films save on your phone, they never disappear.</p>
+<label>Your Name</label><input id="loginName" placeholder="e.g. Vuno Mthembu">
+<label>WhatsApp Number</label><input id="loginPhone" placeholder="e.g. 0789313670" inputmode="tel">
+<label>Your @Username</label><input id="loginUser" placeholder="e.g. @vuno_royal">
+<button class="btn" onclick="doLogin()">🔐 LOGIN / CREATE ACCOUNT - FREE</button>
+<p class="small">No password. No email. Just name + WhatsApp. We save your films on your phone.</p>
+</div>
+<div class="card"><b>🎬 Try without login?</b><br><button class="btnGhost" onclick="guestLogin()">👀 Continue as Guest - Watch Only</button></div>
+</div>
+
+<div id="mainApp" style="display:none">
+<nav>
+<button class="active" onclick="showTab('create',this)">🎬 Create</button>
+<button onclick="showTab('saved',this)">💾 My Saved Films (<span id="savedCount">0</span>)</button>
+<button onclick="showTab('watch',this)">📺 Watch</button>
+<button onclick="showTab('channel',this)">👤 My Channel</button>
+<button onclick="logout()" style="background:#331111;color:#ff8888">🚪 Logout</button>
+</nav>
+<div class="wrap">
+<div id="tab-create">
+<div class="card">
+<h2 style="margin:0">Hi <span id="hiName">Vuno</span> 👋 - Make a film</h2>
+<p class="small">VUNO ROYAL AI MOVIE MAKER • Your films auto-save.</p>
+<label>Your Film Idea</label><textarea id="idea" rows="2">A Durban boy finds a gold rock that talks and changes his family</textarea>
+<label>Genre</label><div class="genres" id="genreList"></div>
+<label>Visual Style</label><div class="styleRow" id="styleList"></div>
+<label>Main Character - Describe look</label><input id="charDesc" value="Young South African boy, 16, grey hoodie, blue beanie, backpack">
+<label>Main Character Name</label><input id="charName" value="Vuno">
+<label>Setting</label><input id="setting" value="Durban, South Africa">
+<label>Language</label><select id="lang"><option>English</option><option>isiZulu</option><option>English + isiZulu Mix</option></select>
+<button class="btn" onclick="makeFilm()">✨ GENERATE FILM + 6 AI IMAGES - 180 Credits</button>
+<p class="small" id="status"></p>
+</div>
+<div id="shareBox" style="display:none" class="card">
+<h2 style="margin:0">📤 Save & Share</h2>
+<p><span class="badgeSaved">✅ AUTO-SAVED TO YOUR PHONE</span> <span class="small" id="savedAt"></span></p>
+<div class="progress"><div id="progBar"></div></div><p class="small" id="progText"></p>
+<button class="btn" onclick="downloadVideo()">🎥 DOWNLOAD VIDEO</button>
+<button class="btnGhost" onclick="downloadStoryboard()">🖼️ DOWNLOAD STORYBOARD IMAGE</button>
+<button class="btnGhost" onclick="downloadScript()">📄 DOWNLOAD SCRIPT</button>
+<div class="shareBox">
+<button class="btn2" onclick="shareWhatsApp()">💬 SHARE TO WHATSAPP</button>
+<button class="btn3" onclick="shareTikTok()">🎵 SHARE TO TIKTOK</button>
+<button class="btnGhost" onclick="shareSystem()">🔗 SHARE TO ANY APP</button>
+<button class="btnGhost" onclick="copyLink()">📋 COPY LINK + CAPTION</button>
+<p class="small" id="shareMsg"></p>
+</div>
+<p class="small"><b>Caption:</b><br><span id="captionPreview"></span></p>
+</div>
+<div id="output"></div>
+</div>
+<div id="tab-saved" style="display:none"><h2>💾 My Saved Films</h2><div id="savedList"></div><button class="btnGhost" onclick="exportAll()">📦 EXPORT ALL MY FILMS (Backup)</button><button class="btnGhost" onclick="clearAllFilms()">🗑️ Delete All Films</button></div>
+<div id="tab-watch" style="display:none"><h2>🔥 Trending on VUNO ROYAL</h2><div id="watchFeed"></div></div>
+<div id="tab-channel" style="display:none"><div class="card"><div class="flex"><div class="char" id="channelLetter">V</div><div><b style="font-size:20px" id="channelName">@vuno_royal</b><br><span class="small" id="channelStats">Durban • 0 films</span></div></div><p class="small" id="channelBio">VUNO ROYAL AI MOVIE MAKER creator.</p></div><h3>My Published Films</h3><div id="myFilms"></div></div>
+</div>
+</div>
+<canvas id="videoCanvas" width="1280" height="720"></canvas>
+<script>
+let user=null, credits=180, currentFilm=null, episode=1, sceneImages=[];
+let genres=["Drama","Horror","Comedy","Sci-Fi","Romance","Action","Fantasy"];
+let styles=["Cinematic Realistic","Anime","3D Pixar Style","African Art Style","Dark Moody"];
+let selGenre="Drama", selStyle="Cinematic Realistic";
+const BRAND="VUNO ROYAL AI MOVIE MAKER";
+const BRAND_SHORT="VUNO ROYAL 👑";
+window.onload=function(){
+  let su=localStorage.getItem('vuno_royal_user'); let sc=localStorage.getItem('vuno_royal_credits');
+  if(sc) credits=parseInt(sc); document.getElementById('creditCount').textContent=credits;
+  if(su){ user=JSON.parse(su); showMainApp(); }
+  initGenres(); renderSaved(); renderWatch();
+};
+function doLogin(){
+  let name=document.getElementById('loginName').value.trim();
+  let phone=document.getElementById('loginPhone').value.trim();
+  let username=document.getElementById('loginUser').value.trim();
+  if(!name){alert("Please enter your name");return;}
+  if(!phone){alert("Please enter WhatsApp number");return;}
+  if(!username) username="@"+name.toLowerCase().replace(/\s/g,'_');
+  if(!username.startsWith('@')) username="@"+username;
+  user={name,phone,username,joined:new Date().toISOString()};
+  localStorage.setItem('vuno_royal_user',JSON.stringify(user));
+  if(!localStorage.getItem('vuno_royal_credits')){credits=180;localStorage.setItem('vuno_royal_credits','180');}
+  showMainApp(); alert(`Sawubona ${name}! 👋 Welcome to ${BRAND}. You have ${credits} credits.`);
+}
+function guestLogin(){user={name:"Guest",phone:"",username:"@guest",isGuest:true};showMainApp();}
+function logout(){if(confirm("Logout? Your saved films stay on this phone.")){user=null;localStorage.removeItem('vuno_royal_user');document.getElementById('mainApp').style.display='none';document.getElementById('loginScreen').style.display='block';}}
+function showMainApp(){document.getElementById('loginScreen').style.display='none';document.getElementById('mainApp').style.display='block';document.getElementById('hiName').textContent=user.name;document.getElementById('userPill').textContent=user.username;document.getElementById('channelName').textContent=user.username;document.getElementById('channelLetter').textContent=user.name.charAt(0).toUpperCase();document.getElementById('channelBio').textContent=`${user.name} • ${BRAND} creator`;document.getElementById('creditCount').textContent=credits;renderSaved();renderMyFilms();}
+function saveCredits(){localStorage.setItem('vuno_royal_credits',String(credits));document.getElementById('creditCount').textContent=credits;}
+function getSavedFilms(){try{return JSON.parse(localStorage.getItem('vuno_royal_saved_films')||'[]');}catch(e){return[];}}
+function saveCurrentFilm(){
+  if(!currentFilm) return;
+  let films=getSavedFilms();
+  films.unshift({id:Date.now(),date:new Date().toLocaleString(),idea:currentFilm.idea,name:currentFilm.name,charDesc:currentFilm.charDesc,setting:currentFilm.setting,lang:currentFilm.lang,genre:currentFilm.genre,style:currentFilm.style,episode:episode,scenes:sceneImages,owner:user?user.username:"@guest",ownerName:user?user.name:"Guest"});
+  localStorage.setItem('vuno_royal_saved_films',JSON.stringify(films));
+  document.getElementById('savedAt').textContent=`Saved • ${films.length} films total`;renderSaved();renderMyFilms();
+}
+function renderSaved(){
+  let films=getSavedFilms(); document.getElementById('savedCount').textContent=films.length;
+  let el=document.getElementById('savedList'); let ch=document.getElementById('channelStats'); if(ch) ch.textContent=`Durban • ${films.length} films • ${user?user.name:""}`;
+  if(films.length===0){el.innerHTML=`<div class="card"><p>No saved films yet. Create your first film!</p></div>`;return;}
+  el.innerHTML=films.map((f,idx)=>`<div class="card"><b>${f.idea}</b><br><span class="small">EP ${f.episode} • ${f.genre} • ${f.date} • By ${f.ownerName}</span><br><img src="${f.scenes[0]?f.scenes[0].img:''}" style="width:100%;border-radius:10px;aspect-ratio:16/9;object-fit:cover;margin-top:8px"><br><button class="btnGhost" onclick="loadFilm(${idx})">▶️ Open Film</button> <button class="btnDanger" onclick="deleteFilm(${idx})">🗑️ Delete</button></div>`).join('');
+}
+function loadFilm(idx){let films=getSavedFilms();let f=films[idx];if(!f)return;currentFilm=f;episode=f.episode;sceneImages=f.scenes;document.getElementById('idea').value=f.idea;document.getElementById('charName').value=f.name;document.getElementById('charDesc').value=f.charDesc||"";document.getElementById('setting').value=f.setting;let html=`<div class="card"><h2>🎬 ${f.idea} <span class="badgeSaved">SAVED • ${f.date}</span></h2><p><span class="pill">${f.genre}</span><span class="pill">${f.style}</span><span class="pill">EP ${f.episode}</span></p></div>`;f.scenes.forEach((s,i)=>{html+=`<div class="scene"><img src="${s.img}"><b>SCENE ${i+1}</b><p>${s.text}</p></div>`;});document.getElementById('output').innerHTML=html;document.getElementById('shareBox').style.display='block';document.getElementById('captionPreview').innerText=getCaption();showTab('create',document.querySelectorAll('#mainApp nav button')[0]);}
+function deleteFilm(idx){if(!confirm("Delete this film?"))return;let films=getSavedFilms();films.splice(idx,1);localStorage.setItem('vuno_royal_saved_films',JSON.stringify(films));renderSaved();renderMyFilms();}
+function clearAllFilms(){if(!confirm("Delete ALL films?"))return;localStorage.removeItem('vuno_royal_saved_films');renderSaved();renderMyFilms();}
+function exportAll(){let films=getSavedFilms();let blob=new Blob([JSON.stringify({user,films,brand:BRAND,exported:new Date().toISOString()},null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`VUNO-ROYAL-Backup-${user?user.name:"user"}.json`;a.click();alert(`Backup downloaded! ${films.length} films.`);}
+function renderMyFilms(){let films=getSavedFilms();document.getElementById('myFilms').innerHTML=films.map(f=>`<div class="card"><b>${f.idea}</b><br><span class="small">EP ${f.episode} • ${f.date}</span></div>`).join('')||"<p class='small'>No films yet</p>";}
+function initGenres(){let gl=document.getElementById('genreList');gl.innerHTML='';genres.forEach(g=>{let b=document.createElement('button');b.textContent=g;if(g==="Drama")b.className="sel";b.onclick=()=>{selGenre=g;document.querySelectorAll('#genreList button').forEach(x=>x.className="");b.className="sel";};gl.appendChild(b);});let sl=document.getElementById('styleList');sl.innerHTML='';styles.forEach(s=>{let b=document.createElement('button');b.textContent=s;if(s===selStyle)b.className="sel";b.onclick=()=>{selStyle=s;document.querySelectorAll('#styleList button').forEach(x=>x.className="");b.className="sel";};sl.appendChild(b);});}
+function showTab(id,btn){['create','saved','watch','channel'].forEach(t=>document.getElementById('tab-'+t).style.display=t===id?'block':'none');document.querySelectorAll('#mainApp nav button').forEach(b=>b.className="");if(btn)btn.className="active";}
+function aiImage(p,seed){return `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=1280&height=720&seed=${seed}&nologo=true`;}
+function getCaption(){let idea=document.getElementById('idea').value||"My film";let name=document.getElementById('charName').value||"Vuno";return `🎬 NEW FILM: ${idea} 👑\nMade with ${BRAND}\n${name} - EP ${episode} - ${selGenre}\nBengithi bengingeve ngikuthanda wangiphoxa...\n#VunoRoyal #VunoRoyalAIMovieMaker #SouthAfricanFilm #Durban #FYP #AIFilm`;}
+function makeFilm(){
+  if(user && user.isGuest){alert("Guest can't save films. Please login.");return;}
+  if(credits<180){alert("Not enough credits!");return;}
+  credits-=180;saveCredits();
+  let idea=document.getElementById('idea').value||"A boy finds gold";let name=document.getElementById('charName').value||"Vuno";let charDesc=document.getElementById('charDesc').value||"Young South African";let setting=document.getElementById('setting').value||"Durban";let lang=document.getElementById('lang').value;
+  episode=1;currentFilm={idea,name,charDesc,setting,lang,genre:selGenre,style:selStyle};
+  document.getElementById('status').textContent="🎨 Generating + Auto-saving...";
+  let sceneTexts=[`OPENING - ${setting}. ${name} is walking home. Something strange happens.`,`THE SECRET - ${name} hides the secret. Tension builds.`,`THE TRUTH - Secret revealed. ${name} says: Bengithi bengingeve ngikuthanda wangiphoxa.`,`THE FIGHT - Villain arrives. ${name} must choose: money or family?`,`THE TURN - ${name} makes a brave choice. Gold, rock and love come together.`,`CLIFFHANGER - Knock on the door. Someone new is there. TO BE CONTINUED...`];
+  let sceneVisuals=[`${name}, ${charDesc}, walking home in ${setting}, sunset, cinematic`,`${name}, ${charDesc}, hiding a glowing gold rock, whispering, ${setting}`,`${name}, ${charDesc}, family argument, shocked faces, ${setting}, dramatic`,`${name}, ${charDesc}, facing villain, confrontation, night, ${setting}`,`${name}, ${charDesc}, holding gold rock up, golden light, hopeful, ${setting}`,`${name}, ${charDesc}, looking at door, scared, mysterious stranger shadow, night`];
+  sceneImages=[];let html=`<div class="card"><h2>🎬 ${idea}</h2><p><span class="pill">${selGenre}</span><span class="pill">${selStyle}</span><span class="pill">${lang}</span></p></div>`;
+  sceneTexts.forEach((s,i)=>{let img=aiImage(`${sceneVisuals[i]}, ${selGenre} film, ${selStyle}, movie still`,Math.floor(Math.random()*99999));sceneImages.push({img,text:s,title:`SCENE ${i+1}`});html+=`<div class="scene"><img src="${img}" loading="lazy"><b>SCENE ${i+1} / 6</b><p>${s}</p><button onclick="speak('I have to do this for my family')" style="background:#222;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer">🔊 Play Voice</button></div>`;});
+  html+=`<button class="btn" onclick="publishFilm()">📤 PUBLISH</button>`;
+  document.getElementById('output').innerHTML=html;document.getElementById('shareBox').style.display='block';document.getElementById('captionPreview').innerText=getCaption();saveCurrentFilm();document.getElementById('status').textContent="✅ Done! Auto-saved.";document.getElementById('shareBox').scrollIntoView();
+}
+function publishFilm(){alert("Published to "+(user?user.username:"")+" on "+BRAND+" - You keep 70%");renderMyFilms();showTab('channel',document.querySelectorAll('#mainApp nav button')[3]);}
+function speak(t){try{let u=new SpeechSynthesisUtterance(t);u.lang="en-ZA";speechSynthesis.speak(u);}catch(e){}}
+async function downloadVideo(){
+  if(!currentFilm){alert("Create a film first!");return;}
+  document.getElementById('progText').textContent="🎥 Making video... 15 seconds...";
+  let canvas=document.getElementById('videoCanvas');let ctx=canvas.getContext('2d');let stream=canvas.captureStream(30);let recorder=new MediaRecorder(stream,{mimeType:'video/webm'});let chunks=[];
+  recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
+  recorder.onstop=()=>{let blob=new Blob(chunks,{type:'video/webm'});let url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download=`VUNO-ROYAL-${currentFilm.name}-EP${episode}.webm`;a.click();document.getElementById('progText').textContent="✅ Video downloaded!";document.getElementById('progBar').style.width="100%";};
+  recorder.start();
+  for(let i=0;i<sceneImages.length;i++){
+    let img=new Image();img.crossOrigin="anonymous";try{img.src=sceneImages[i].img;await new Promise(res=>{img.onload=res;img.onerror=res;setTimeout(res,3000);});}catch(e){}
+    let start=Date.now();
+    while(Date.now()-start<2500){ctx.fillStyle="#000";ctx.fillRect(0,0,1280,720);try{ctx.drawImage(img,0,0,1280,720);}catch(e){}let grad=ctx.createLinearGradient(0,500,0,720);grad.addColorStop(0,"rgba(0,0,0,0)");grad.addColorStop(1,"rgba(0,0,0,0.9)");ctx.fillStyle=grad;ctx.fillRect(0,500,1280,220);ctx.fillStyle="#FFD700";ctx.font="bold 28px Arial";ctx.fillText(`${BRAND_SHORT} • SCENE ${i+1}/6`,40,60);ctx.fillStyle="#fff";ctx.font="bold 32px Arial";ctx.fillText(sceneImages[i].text.substring(0,70),40,620);document.getElementById('progBar').style.width=((i+1)/6*100)+"%";await new Promise(r=>setTimeout(r,100));}
+  }
+  recorder.stop();
+}
+async function downloadStoryboard(){let canvas=document.createElement('canvas');canvas.width=1280;canvas.height=1440;let ctx=canvas.getContext('2d');ctx.fillStyle="#0a0a0a";ctx.fillRect(0,0,1280,1440);ctx.fillStyle="#FFD700";ctx.font="bold 32px Arial";ctx.fillText(`${BRAND} - ${currentFilm?currentFilm.idea:"My Film"}`,30,50);for(let i=0;i<Math.min(6,sceneImages.length);i++){let img=new Image();img.crossOrigin="anonymous";try{img.src=sceneImages[i].img;await new Promise(res=>{img.onload=res;img.onerror=res;setTimeout(res,2500);});}catch(e){}let x=(i%2)*640,y=80+Math.floor(i/2)*440;try{ctx.drawImage(img,x+10,y,620,350);}catch(e){}ctx.fillStyle="#fff";ctx.font="bold 18px Arial";ctx.fillText(`SCENE ${i+1}`,x+10,y+380);}let a=document.createElement('a');a.download="VUNO-ROYAL-Storyboard.png";a.href=canvas.toDataURL("image/png");a.click();}
+function downloadScript(){let txt=`${BRAND} - ${currentFilm.idea}\n\n`;sceneImages.forEach((s,i)=>{txt+=`SCENE ${i+1}\n${s.text}\n\n`;});let blob=new Blob([txt],{type:'text/plain'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download="Script.txt";a.click();}
+function shareWhatsApp(){let t=encodeURIComponent(getCaption());window.open(`https://wa.me/?text=${t}`,"_blank");}
+function shareTikTok(){navigator.clipboard.writeText(getCaption());document.getElementById('shareMsg').textContent="✅ Caption copied! Download Video, open TikTok, upload, paste caption.";downloadVideo();setTimeout(()=>window.open("https://www.tiktok.com/upload","_blank"),1000);}
+async function shareSystem(){if(navigator.share){try{await navigator.share({title:BRAND,text:getCaption(),url:location.href});}catch(e){copyLink();}}else copyLink();}
+function copyLink(){navigator.clipboard.writeText(getCaption()+"\nhttps://vuno-royal.com");document.getElementById('shareMsg').textContent="✅ Copied!";}
+function renderWatch(){document.getElementById('watchFeed').innerHTML=[{t:"Gold Rock of Durban",g:"Drama"},{t:"Lodge of Shadows",g:"Horror"}].map(f=>`<div class="card"><b>${f.t}</b><br><span class="small">${f.g} • Made on ${BRAND}</span><br><button class="btn" style="padding:10px">▶️ Watch</button></div>`).join('');}
+</script>
+</body>
+</html>
