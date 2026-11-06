@@ -3,26 +3,138 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VUNO ROYAL AI MOVIE MAKER - Turn 1 Idea Into A Film</title>
+<title>VUNO ROYAL AI MOVIE MAKER</title>
 <style>
 *{box-sizing:border-box;font-family:system-ui,Arial}
-body{background:#0a0a0a;color:#fff;margin:0}
-header{background:#111;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
-.logo{font-size:19px;font-weight:900;color:#FFD700;line-height:1.1}.logo span{color:#fff;font-size:13px;letter-spacing:2px}
-.credits{background:#FFD700;color:#000;padding:6px 12px;border-radius:20px;font-weight:700;font-size:13px}
-nav{display:flex;gap:8px;padding:12px 20px;overflow-x:auto}
-nav button{background:#222;color:#fff;border:0;padding:10px 16px;border-radius:20px;cursor:pointer;white-space:nowrap}
-nav button.active{background:#FFD700;color:#000}
-.wrap{max-width:900px;margin:0 auto;padding:0 16px 80px}
+body{background:#0a0a0a;color:#fff;margin:0;padding:0 16px 80px}
+header{background:#111;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:19px;font-weight:900;color:#FFD700}
+.logo span{color:#fff;font-size:12px;letter-spacing:2px}
 .card{background:#181818;border-radius:16px;padding:18px;margin:14px 0;border:1px solid #2a2a2a}
 input,textarea,select{width:100%;background:#222;color:#fff;border:1px solid #333;border-radius:10px;padding:12px;margin:6px 0;font-size:15px}
-label{font-size:12px;color:#aaa;text-transform:uppercase;letter-spacing:1px}
+label{font-size:12px;color:#aaa}
 .btn{background:#FFD700;color:#000;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
 .btn2{background:#25D366;color:#000;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
-.btn3{background:#fff;color:#000;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
-.btnGreen{background:#00aa55;color:#fff;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
-.btnGhost{background:#222;color:#fff;border:1px solid #444;padding:12px;border-radius:12px;font-weight:700;width:100%;cursor:pointer;margin-top:8px}
-.btnDanger{background:#331111;color:#ff8888;border:1px solid #552222;padding:8px 12px;border-radius:8px;cursor:pointer}
-.genres,.styleRow{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
-.genres button,.styleRow button{background:#222;color:#fff;border:2px solid #333;padding:8px 14px;border-radius:20px;cursor:pointer}
-.genres button.sel,.styleRow button.sel{background:#FFD700;color
+.btnGhost{background:#222;color:#fff;border:1px solid #444;padding:12px;border-radius:12px;width:100%;cursor:pointer;margin-top:8px}
+.genres{display:flex;flex-wrap:wrap;gap:8px}
+.genres button{background:#222;color:#fff;border:2px solid #333;padding:8px 14px;border-radius:20px;cursor:pointer}
+.genres button.sel{background:#FFD700;color:#000}
+.scene{background:#111;border-left:4px solid #FFD700;padding:14px;border-radius:12px;margin:12px 0}
+.scene img{width:100%;border-radius:10px;aspect-ratio:16/9;object-fit:cover;background:#222}
+.pill{display:inline-block;background:#222;padding:4px 10px;border-radius:20px;font-size:12px}
+.small{font-size:13px;color:#aaa}
+canvas{display:none}
+</style>
+</head>
+<body>
+<header><div class="logo">VUNO ROYAL 👑<br><span>AI MOVIE MAKER</span></div><div>⭐ UNLIMITED</div></header>
+
+<div class="card">
+<h2 style="margin:0">Hi Vuno 👋 Make a film</h2>
+<p class="small">VUNO ROYAL AI MOVIE MAKER • UNLIMITED • No credits • Always works</p>
+<label>Your Film Idea</label>
+<textarea id="idea" rows="2">A Durban boy finds a gold rock that talks and changes his family</textarea>
+<label>Genre - Tap one</label>
+<div class="genres" id="genreList"></div><br>
+<label>Main Character Name</label>
+<input id="charName" value="Vuno">
+<label>Main Character Look</label>
+<input id="charDesc" value="Young South African boy, 16, grey hoodie, blue beanie">
+<label>Setting</label>
+<input id="setting" value="Durban, South Africa">
+<button class="btn" onclick="makeFilm()">✨ GENERATE FILM + 6 AI IMAGES</button>
+<p class="small" id="status">Press GENERATE to test. If images appear, it works.</p>
+</div>
+
+<div id="shareBox" style="display:none" class="card">
+<h3>📤 Save & Share</h3>
+<button class="btn" onclick="downloadVideo()">🎥 DOWNLOAD VIDEO</button>
+<button class="btn2" onclick="shareWhatsApp()">💬 SHARE TO WHATSAPP</button>
+<button class="btnGhost" onclick="copyLink()">📋 COPY CAPTION</button>
+<p class="small" id="shareMsg"></p>
+<p class="small" id="captionPreview"></p>
+</div>
+
+<div id="output"></div>
+<div id="savedList"></div>
+
+<canvas id="videoCanvas" width="1280" height="720"></canvas>
+<script>
+let selGenre="Drama", currentFilm=null, episode=1, sceneImages=[];
+let genres=["Drama","Horror","Comedy","Sci-Fi","Romance","Action","Fantasy"];
+let gl=document.getElementById('genreList');
+genres.forEach(g=>{
+  let b=document.createElement('button'); b.textContent=g;
+  if(g==="Drama") b.className="sel";
+  b.onclick=()=>{selGenre=g; document.querySelectorAll('#genreList button').forEach(x=>x.className=""); b.className="sel";};
+  gl.appendChild(b);
+});
+function aiImage(p,seed){ return `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=1280&height=720&seed=${seed}&nologo=true`; }
+function getCaption(){
+  let idea=document.getElementById('idea').value||"My film";
+  return `🎬 NEW FILM: ${idea} 👑\nMade with VUNO ROYAL AI MOVIE MAKER\n#VunoRoyal #VunoRoyalAIMovieMaker #Durban #FYP`;
+}
+function makeFilm(){
+  document.getElementById('status').textContent="🎨 Generating... Wait 10 seconds for images...";
+  let idea=document.getElementById('idea').value||"A boy finds gold";
+  let name=document.getElementById('charName').value||"Vuno";
+  let charDesc=document.getElementById('charDesc').value||"Young South African";
+  let setting=document.getElementById('setting').value||"Durban";
+  currentFilm={idea,name,charDesc,setting,genre:selGenre}; episode=1;
+  let sceneTexts=[
+    `OPENING - ${setting}. ${name} is walking home. Something strange happens.`,
+    `THE SECRET - ${name} hides the secret. Tension builds.`,
+    `THE TRUTH - Secret revealed. ${name} says: Bengithi bengingeve ngikuthanda wangiphoxa.`,
+    `THE FIGHT - Villain arrives. ${name} must choose: money or family?`,
+    `THE TURN - ${name} makes a brave choice. Gold, rock and love come together.`,
+    `CLIFFHANGER - Knock on the door. Someone new is there. TO BE CONTINUED...`
+  ];
+  let sceneVisuals=[
+    `${name}, ${charDesc}, walking home in ${setting}, sunset, cinematic`,
+    `${name}, ${charDesc}, hiding glowing gold rock, ${setting}`,
+    `${name}, ${charDesc}, family argument, shocked faces, ${setting}, dramatic`,
+    `${name}, ${charDesc}, facing villain, confrontation, night, ${setting}`,
+    `${name}, ${charDesc}, holding gold rock up, golden light, hopeful, ${setting}`,
+    `${name}, ${charDesc}, looking at door, scared, mysterious stranger shadow, night`
+  ];
+  sceneImages=[];
+  let html=`<div class="card"><h2>🎬 ${idea}</h2><p><span class="pill">${selGenre}</span></p></div>`;
+  sceneTexts.forEach((s,i)=>{
+    let img=aiImage(`${sceneVisuals[i]}, ${selGenre} film, cinematic, movie still`, Math.floor(Math.random()*99999));
+    sceneImages.push({img,text:s});
+    html+=`<div class="scene"><img src="${img}"><b>SCENE ${i+1} / 6</b><p>${s}</p></div>`;
+  });
+  document.getElementById('output').innerHTML=html;
+  document.getElementById('shareBox').style.display='block';
+  document.getElementById('captionPreview').innerText=getCaption();
+  document.getElementById('status').textContent="✅ DONE! Film generated. Scroll down to see 6 images.";
+  try{ localStorage.setItem('vuno_royal_last_film', JSON.stringify({idea,name,scenes:sceneImages,date:new Date().toLocaleString()})); }catch(e){}
+  document.getElementById('output').scrollIntoView();
+}
+function shareWhatsApp(){ window.open(`https://wa.me/?text=${encodeURIComponent(getCaption())}`,"_blank"); }
+function copyLink(){ navigator.clipboard.writeText(getCaption()); document.getElementById('shareMsg').textContent="✅ Copied!"; }
+async function downloadVideo(){
+  if(!currentFilm){ alert("Press GENERATE FILM first!"); return; }
+  alert("🎥 Making video... Wait 15 seconds, it will download automatically.");
+  let canvas=document.getElementById('videoCanvas'); let ctx=canvas.getContext('2d');
+  let stream=canvas.captureStream(30); let recorder=new MediaRecorder(stream,{mimeType:'video/webm'}); let chunks=[];
+  recorder.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
+  recorder.onstop=()=>{ let blob=new Blob(chunks,{type:'video/webm'}); let url=URL.createObjectURL(blob); let a=document.createElement('a'); a.href=url; a.download=`VUNO-ROYAL-${currentFilm.name}.webm`; a.click(); alert("✅ Video downloaded!"); };
+  recorder.start();
+  for(let i=0;i<sceneImages.length;i++){
+    let img=new Image(); img.crossOrigin="anonymous";
+    try{ img.src=sceneImages[i].img; await new Promise(res=>{ img.onload=res; img.onerror=res; setTimeout(res,3000); }); }catch(e){}
+    let start=Date.now();
+    while(Date.now()-start<2500){
+      ctx.fillStyle="#000"; ctx.fillRect(0,0,1280,720);
+      try{ ctx.drawImage(img,0,0,1280,720); }catch(e){}
+      ctx.fillStyle="#FFD700"; ctx.font="bold 28px Arial"; ctx.fillText(`VUNO ROYAL 👑 • SCENE ${i+1}/6`,40,60);
+      ctx.fillStyle="#fff"; ctx.font="bold 32px Arial"; ctx.fillText(sceneImages[i].text.substring(0,70),40,620);
+      await new Promise(r=>setTimeout(r,100));
+    }
+  }
+  recorder.stop();
+}
+</script>
+</body>
+</html>
