@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VUNO ROYAL AI MOVIE MAKER - AUTO CUT</title>
+<title>VUNO ROYAL AI MOVIE MAKER - AI CUTOUT</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
 <style>
 *{box-sizing:border-box;font-family:system-ui,Arial}
 body{background:#0a0a0a;color:#fff;margin:0;padding:0 16px 80px}
@@ -17,60 +18,58 @@ label{font-size:12px;color:#aaa}
 .btn{background:#FFD700;color:#000;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
 .btn2{background:#25D366;color:#000;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
 .btnGhost{background:#222;color:#fff;border:1px solid #444;padding:12px;border-radius:12px;width:100%;cursor:pointer;margin-top:8px}
-.btnCut{background:#7c3aed;color:#fff;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
+.btnAI{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;border:0;padding:16px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
 .genres{display:flex;flex-wrap:wrap;gap:8px}
 .genres button{background:#222;color:#fff;border:2px solid #333;padding:8px 14px;border-radius:20px;cursor:pointer}
 .genres button.sel{background:#FFD700;color:#000}
 .scene{background:#111;border-left:4px solid #FFD700;padding:14px;border-radius:12px;margin:12px 0}
 .scene-wrap{position:relative;border-radius:10px;overflow:hidden;background:#222}
 .scene-wrap img.bg{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
-.char-cut{position:absolute;bottom:0;left:4%;width:36%;height:82%;object-fit:cover;object-position:top center;
-/* AUTO-CUT SHAPE - No square box */
-border-radius:50% 50% 12px 12px / 32% 32% 12px 12px;
-filter:drop-shadow(0 10px 20px rgba(0,0,0,0.8));
-mask-image:radial-gradient(ellipse 92% 96% at 50% 42%, black 62%, transparent 78%);
--webkit-mask-image:radial-gradient(ellipse 92% 96% at 50% 42%, black 62%, transparent 78%);
-border:0}
-.char-label{position:absolute;bottom:8px;left:4%;background:#FFD700;color:#000;font-weight:800;font-size:12px;padding:5px 10px;border-radius:20px;z-index:3}
-.char-badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.8);color:#FFD700;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:800;z-index:3}
+.cutout-layer{position:absolute;bottom:0;left:3%;width:38%;height:92%;object-fit:contain;object-position:bottom center;pointer-events:none;z-index:2}
+.char-label{position:absolute;bottom:8px;left:3%;background:#FFD700;color:#000;font-weight:800;font-size:12px;padding:5px 10px;border-radius:20px;z-index:4}
+.char-badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.8);color:#FFD700;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:800;z-index:4}
+.shadow-layer{position:absolute;bottom:2%;left:5%;width:34%;height:18px;background:radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%);border-radius:50%;z-index:1}
 .pill{display:inline-block;background:#222;padding:4px 10px;border-radius:20px;font-size:12px}
 .small{font-size:13px;color:#aaa}
 .preview-box{display:flex;gap:12px}
-.preview-box img{width:50%;height:170px;object-fit:cover;border-radius:12px;border:2px solid #333}
-.preview-box img.cut{border:3px solid #FFD700;border-radius:50% 50% 12px 12px / 32% 32% 12px 12px;mask-image:radial-gradient(ellipse 92% 96% at 50% 42%, black 62%, transparent 78%);-webkit-mask-image:radial-gradient(ellipse 92% 96% at 50% 42%, black 62%, transparent 78%)}
+.preview-box div{flex:1}
+.preview-box img{width:100%;height:200px;object-fit:cover;border-radius:12px;border:2px solid #333}
+.preview-box img.cut{object-fit:contain;background:repeating-conic-gradient(#222 0% 25%, #111 0% 50%) 50% / 20px 20px;border:3px solid #FFD700}
+.checker{background:repeating-conic-gradient(#222 0% 25%, #111 0% 50%) 50% / 20px 20px !important}
 canvas{display:none}
+#cutCanvasShow{display:block;width:100%;max-height:300px;object-fit:contain;border-radius:12px}
 </style>
 </head>
 <body>
-<header><div class="logo">VUNO ROYAL 👑<br><span>AI MOVIE MAKER</span></div><div>✂️ AUTO-CUT</div></header>
+<header><div class="logo">VUNO ROYAL 👑<br><span>AI MOVIE MAKER</span></div><div>🤖 AI CUTOUT</div></header>
 
 <div class="card">
 <h2 style="margin:0">Hi Vuno 👋 Make a film</h2>
-<p class="small">Upload photo → Auto-Cut edges → Auto-Match to each scene • Same character in all 6 scenes</p>
+<p class="small">AI Cutout like CapCut • Removes background • Blends nice into every scene</p>
 
 <label>📸 STEP 1 - Upload Your Photo</label>
 <input type="file" id="charUpload" accept="image/*" onchange="uploadChar(event)">
 <div class="preview-box" style="margin-top:10px">
-<div style="flex:1"><p class="small">BEFORE - Raw photo</p><img id="beforeImg" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80"></div>
-<div style="flex:1"><p class="small">AFTER - Auto-Cut ✨</p><img id="afterImg" class="cut" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80"></div>
+<div><p class="small">BEFORE - With background</p><img id="beforeImg" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80"></div>
+<div><p class="small">AFTER - AI Cutout ✨ Transparent</p><img id="afterImg" class="cut checker" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80"></div>
 </div>
 
-<label>✂️ STEP 2 - Auto-Cut Settings - Move sliders to perfect the cut</label>
-<label>Cut Tightness: <span id="cutVal">62</span>% - How tight to cut around you</label>
-<input type="range" id="cutTight" min="40" max="85" value="62" oninput="updateCut()">
-<label>Feather / Blend Edges: <span id="featherVal">78</span>% - How soft edges blend into scene</label>
-<input type="range" id="feather" min="65" max="95" value="78" oninput="updateCut()">
-<label>Zoom To Face: <span id="zoomVal">100</span>%</label>
-<input type="range" id="zoom" min="80" max="160" value="100" oninput="updateCut()">
-<label>Scene Match: <span id="matchVal">ON</span> - Auto color-match Vuno to each scene</label>
-<select id="matchMode" onchange="updateCut()">
-<option value="auto">AUTO - Match each scene (Sunset=gold, Night=dark)</option>
-<option value="off">OFF - Keep original colors</option>
-<option value="cinematic">CINEMATIC - Always warm movie look</option>
-</select>
+<button class="btnAI" onclick="aiCutout()">🤖 AI AUTO-CUTOUT - Remove Background & Blend Nice</button>
+<p class="small" id="cutStatus">Upload photo → Press AI CUTOUT → Wait 3 sec → Background disappears, only you remain.</p>
 
-<button class="btnCut" onclick="autoCutPhoto()">✂️ AUTO-CUT MY PHOTO - Fix Edges Now</button>
-<p class="small" id="cutStatus">Upload photo, then press AUTO-CUT. It will cut edges and match colors.</p>
+<label>✨ BLEND SETTINGS - Make it blend nice</label>
+<label>Edge Softness (Hair Blend): <span id="softVal">12</span> - Higher = softer hair, no white line</label>
+<input type="range" id="edgeSoft" min="0" max="25" value="12" oninput="updateBlend()">
+<label>Blend / Transparency Match: <span id="blendVal">100</span>% - Lower = more see-through into background</label>
+<input type="range" id="blendAmt" min="70" max="100" value="100" oninput="updateBlend()">
+<label>Shadow Strength: <span id="shadowVal">60</span>% - Shadow makes you stand on ground</label>
+<input type="range" id="shadowAmt" min="0" max="100" value="60" oninput="updateBlend()">
+<label>Color Match: <span id="matchVal">AUTO</span></label>
+<select id="matchMode" onchange="updateBlend()">
+<option value="auto">AUTO - Match each scene (Sunset=warm, Night=cool)</option>
+<option value="off">OFF - Keep original colors</option>
+<option value="cinematic">CINEMATIC - Warm movie look always</option>
+</select>
 
 <label>Your Film Idea</label>
 <textarea id="idea" rows="2">A Durban boy finds a gold rock that talks and changes his family</textarea>
@@ -82,13 +81,13 @@ canvas{display:none}
 <input id="charDesc" value="Young South African boy, 16, grey hoodie, blue beanie">
 <label>Setting</label>
 <input id="setting" value="Durban, South Africa">
-<button class="btn" onclick="makeFilm()">✨ GENERATE FILM - CUT + MATCHED IN ALL 6 SCENES</button>
-<p class="small" id="status">Press GENERATE after AUTO-CUT.</p>
+<button class="btn" onclick="makeFilm()">✨ GENERATE FILM - AI CUTOUT BLENDED IN ALL 6 SCENES</button>
+<p class="small" id="status">Press AI CUTOUT first, then GENERATE.</p>
 </div>
 
 <div id="shareBox" style="display:none" class="card">
 <h3>📤 Save & Share</h3>
-<button class="btn" onclick="downloadVideo()">🎥 DOWNLOAD VIDEO - With Cut Character</button>
+<button class="btn" onclick="downloadVideo()">🎥 DOWNLOAD VIDEO - With Blended Cutout</button>
 <button class="btn2" onclick="shareWhatsApp()">💬 SHARE TO WHATSAPP</button>
 <button class="btnGhost" onclick="copyLink()">📋 COPY CAPTION</button>
 <p class="small" id="shareMsg"></p>
@@ -97,11 +96,13 @@ canvas{display:none}
 
 <div id="output"></div>
 <canvas id="videoCanvas" width="1280" height="720"></canvas>
-<canvas id="cutCanvas" width="600" height="800"></canvas>
+<canvas id="processCanvas" width="600" height="800"></canvas>
+<canvas id="blendCanvas" width="600" height="800"></canvas>
 <script>
 let selGenre="Drama", currentFilm=null, episode=1, sceneImages=[];
 let charImage="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80";
-let cutSettings={tight:62, feather:78, zoom:100, match:"auto"};
+let cutoutImage=null; // Transparent PNG after AI cut
+let blendSettings={soft:12, blend:100, shadow:60, match:"auto"};
 let genres=["Drama","Horror","Comedy","Sci-Fi","Romance","Action","Fantasy"];
 let gl=document.getElementById('genreList');
 genres.forEach(g=>{
@@ -116,196 +117,7 @@ function uploadChar(event){
   let reader=new FileReader();
   reader.onload=function(e){
     charImage=e.target.result;
+    cutoutImage=null;
     document.getElementById('beforeImg').src=charImage;
     document.getElementById('afterImg').src=charImage;
-    document.getElementById('cutStatus').textContent="✅ Photo uploaded! Now press AUTO-CUT MY PHOTO.";
-    try{localStorage.setItem('vuno_royal_char',charImage);}catch(e){}
-  };
-  reader.readAsDataURL(file);
-}
-try{let s=localStorage.getItem('vuno_royal_char'); if(s){charImage=s; document.getElementById('beforeImg').src=s; document.getElementById('afterImg').src=s;}}catch(e){}
-
-function updateCut(){
-  cutSettings.tight=parseInt(document.getElementById('cutTight').value);
-  cutSettings.feather=parseInt(document.getElementById('feather').value);
-  cutSettings.zoom=parseInt(document.getElementById('zoom').value);
-  cutSettings.match=document.getElementById('matchMode').value;
-  document.getElementById('cutVal').textContent=cutSettings.tight;
-  document.getElementById('featherVal').textContent=cutSettings.feather;
-  document.getElementById('zoomVal').textContent=cutSettings.zoom;
-  document.getElementById('matchVal').textContent=cutSettings.match.toUpperCase();
-  // Live preview - update cut shape instantly
-  let after=document.getElementById('afterImg');
-  after.style.maskImage=`radial-gradient(ellipse 92% 96% at 50% 42%, black ${cutSettings.tight}%, transparent ${cutSettings.feather}%)`;
-  after.style.webkitMaskImage=`radial-gradient(ellipse 92% 96% at 50% 42%, black ${cutSettings.tight}%, transparent ${cutSettings.feather}%)`;
-  after.style.objectPosition=`center ${Math.max(0, (100-cutSettings.zoom)/2)}%`;
-  // Re-apply to scenes if film exists
-  document.querySelectorAll('.char-cut').forEach(el=>{
-    el.style.maskImage=`radial-gradient(ellipse 92% 96% at 50% 42%, black ${cutSettings.tight}%, transparent ${cutSettings.feather}%)`;
-    el.style.webkitMaskImage=`radial-gradient(ellipse 92% 96% at 50% 42%, black ${cutSettings.tight}%, transparent ${cutSettings.feather}%)`;
-  });
-}
-
-function autoCutPhoto(){
-  // This does the REAL cut: draws your photo to a canvas, cuts edges, feather, saves as new cut image
-  document.getElementById('cutStatus').textContent="✂️ Auto-cutting... Removing edges, feathering, matching colors...";
-  let img=new Image();
-  img.onload=function(){
-    let canvas=document.getElementById('cutCanvas');
-    let ctx=canvas.getContext('2d');
-    // Auto-crop to face area: focus on top 70% where face is, cut off background sides
-    let w=img.width, h=img.height;
-    // Crop 15% from left/right, 10% top, keep center - auto-centers person
-    let cropX=w*0.12, cropY=h*0.02, cropW=w*0.76, cropH=h*0.96;
-    ctx.clearRect(0,0,600,800);
-    // Draw with feathered oval mask
-    ctx.save();
-    ctx.beginPath();
-    ctx.ellipse(300,360, 260, 340, 0, 0, Math.PI*2);
-    ctx.clip();
-    ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, 600, 800);
-    ctx.restore();
-    // Feather edges - blur outer edge by drawing soft gradient
-    ctx.globalCompositeOperation='destination-in';
-    let grad=ctx.createRadialGradient(300,360,180,300,360,360);
-    grad.addColorStop(0,'rgba(0,0,0,1)');
-    grad.addColorStop(0.65,'rgba(0,0,0,1)');
-    grad.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=grad;
-    ctx.fillRect(0,0,600,800);
-    ctx.globalCompositeOperation='source-over';
-    let cutData=canvas.toDataURL('image/png');
-    // Save cut version
-    charImage=cutData;
-    document.getElementById('afterImg').src=cutData;
-    try{localStorage.setItem('vuno_royal_char_cut',cutData); localStorage.setItem('vuno_royal_char',cutData);}catch(e){}
-    document.getElementById('cutStatus').textContent="✅ AUTO-CUT DONE! Edges cut, feathered, face centered. Now press GENERATE FILM - Vuno will be cut into every scene.";
-    alert("✅ AUTO-CUT DONE!\n\nYour photo is now cut - no square box, soft edges, face centered.\nNow press GENERATE FILM.");
-    updateCut();
-  };
-  img.src=charImage;
-  img.crossOrigin="anonymous";
-}
-
-// Scene color matching - each scene has its own light
-function getSceneFilter(i){
-  if(cutSettings.match==="off") return "none";
-  if(cutSettings.match==="cinematic") return "sepia(0.25) saturate(1.2) brightness(1.05) contrast(1.1)";
-  // AUTO per scene
-  let filters=[
-    "sepia(0.35) saturate(1.3) brightness(1.12) hue-rotate(-10deg)", // Sunset warm gold
-    "brightness(0.85) contrast(1.15) saturate(0.9)", // Secret dark
-    "sepia(0.15) brightness(1.05) saturate(1.1)", // Home warm
-    "brightness(0.75) contrast(1.25) hue-rotate(210deg) saturate(0.8)", // Night fight blue/dark
-    "sepia(0.5) saturate(1.6) brightness(1.25) contrast(1.1)", // Gold glow
-    "brightness(0.7) contrast(1.2) saturate(0.7)" // Cliffhanger night
-  ];
-  return filters[i % filters.length];
-}
-function getSceneShadow(i){
-  let shadows=["0 15px 30px rgba(255,150,0,0.4)","0 15px 30px rgba(0,0,0,0.9)","0 10px 20px rgba(0,0,0,0.6)","0 15px 30px rgba(0,0,255,0.3)","0 15px 40px rgba(255,215,0,0.7)","0 15px 30px rgba(0,0,0,0.9)"];
-  return shadows[i % shadows.length];
-}
-
-function getCaption(){
-  let idea=document.getElementById('idea').value||"My film";
-  return `🎬 NEW FILM: ${idea} 👑\nMade with VUNO ROYAL AI MOVIE MAKER - Auto-Cut Character!\n#VunoRoyal #VunoRoyalAIMovieMaker #Durban #FYP`;
-}
-let backgrounds=[
-  "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=1280&q=80",
-  "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1280&q=80",
-  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1280&q=80",
-  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80",
-  "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?w=1280&q=80",
-  "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1280&q=80"
-];
-function makeFilm(){
-  let idea=document.getElementById('idea').value||"A boy finds gold";
-  let name=document.getElementById('charName').value||"Vuno";
-  let charDesc=document.getElementById('charDesc').value||"Young South African boy";
-  let setting=document.getElementById('setting').value||"Durban";
-  currentFilm={idea,name,charDesc,setting,genre:selGenre}; episode=1;
-  let sceneTexts=[
-    `OPENING - ${setting}. ${name} is walking home. Something strange happens.`,
-    `THE SECRET - ${name} hides the secret. Tension builds.`,
-    `THE TRUTH - Secret revealed. ${name} says: Bengithi bengingeve ngikuthanda wangiphoxa.`,
-    `THE FIGHT - Villain arrives. ${name} must choose: money or family?`,
-    `THE TURN - ${name} makes a brave choice. Gold, rock and love come together.`,
-    `CLIFFHANGER - Knock on the door. Someone new is there. TO BE CONTINUED...`
-  ];
-  let sceneLabels=["OPENING - Walking Home","THE SECRET","THE TRUTH","THE FIGHT","THE TURN","CLIFFHANGER"];
-  sceneImages=[];
-  let html=`<div class="card"><h2>🎬 ${idea}</h2><p><span class="pill">${selGenre}</span> <span class="pill">✂️ Auto-Cut: ${name}</span> <span class="pill">VUNO ROYAL 👑</span></p><p class="small">Character: ${charDesc} - Cut, feathered & color-matched to each scene below.</p></div>`;
-  sceneTexts.forEach((s,i)=>{
-    let bg=backgrounds[i % backgrounds.length];
-    let filter=getSceneFilter(i);
-    let shadow=getSceneShadow(i);
-    sceneImages.push({img:bg, char:charImage, text:s, filter});
-    // Mask uses your slider values - so you control the cut
-    let mask=`radial-gradient(ellipse 92% 96% at 50% 42%, black ${cutSettings.tight}%, transparent ${cutSettings.feather}%)`;
-    html+=`<div class="scene">
-      <div class="scene-wrap">
-        <img class="bg" src="${bg}">
-        <div class="char-badge">SCENE ${i+1} / 6 • ${sceneLabels[i]}</div>
-        <img class="char-cut" src="${charImage}" style="filter:${filter}; box-shadow:${shadow}; mask-image:${mask}; -webkit-mask-image:${mask}; object-position:center top">
-        <div class="char-label">👑 ${name} • ${sceneLabels[i]}</div>
-      </div>
-      <b>SCENE ${i+1} / 6 - ${sceneLabels[i]}</b><p>${s}</p>
-      <p class="small">✂️ Cut: ${cutSettings.tight}% tight, ${cutSettings.feather}% feather • 🎨 Filter: ${filter.substring(0,30)}...</p>
-      <button onclick="changeBg(${i})" style="background:#222;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer">🔄 Change Background Only - Character Stays Cut</button>
-    </div>`;
-  });
-  document.getElementById('output').innerHTML=html;
-  document.getElementById('shareBox').style.display='block';
-  document.getElementById('captionPreview').innerText=getCaption();
-  document.getElementById('status').textContent="✅ DONE! Vuno is auto-cut & color-matched in all 6 scenes. Move sliders above to re-cut, then GENERATE again to update.";
-  document.getElementById('output').scrollIntoView();
-}
-function changeBg(i){
-  let next=backgrounds[(i+2)%backgrounds.length];
-  sceneImages[i].img=next;
-  let wraps=document.querySelectorAll('.scene-wrap img.bg');
-  if(wraps[i]) wraps[i].src=next;
-}
-function shareWhatsApp(){ window.open(`https://wa.me/?text=${encodeURIComponent(getCaption())}`,"_blank"); }
-function copyLink(){ navigator.clipboard.writeText(getCaption()); document.getElementById('shareMsg').textContent="✅ Copied!"; }
-async function downloadVideo(){
-  if(!currentFilm){ alert("Press GENERATE FILM first!"); return; }
-  alert("🎥 Making video with CUT character... Wait 15 seconds.");
-  let canvas=document.getElementById('videoCanvas'); let ctx=canvas.getContext('2d');
-  let stream=canvas.captureStream(30); let recorder=new MediaRecorder(stream,{mimeType:'video/webm'}); let chunks=[];
-  recorder.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
-  recorder.onstop=()=>{ let blob=new Blob(chunks,{type:'video/webm'}); let url=URL.createObjectURL(blob); let a=document.createElement('a'); a.href=url; a.download=`VUNO-ROYAL-${currentFilm.name}-CUT.webm`; a.click(); alert("✅ Video downloaded with cut character!"); };
-  recorder.start();
-  for(let i=0;i<sceneImages.length;i++){
-    let img=new Image(); img.crossOrigin="anonymous";
-    let charImg=new Image(); charImg.crossOrigin="anonymous";
-    try{ img.src=sceneImages[i].img; await new Promise(res=>{ img.onload=res; img.onerror=res; setTimeout(res,3000); }); }catch(e){}
-    try{ charImg.src=sceneImages[i].char; await new Promise(res=>{ charImg.onload=res; charImg.onerror=res; setTimeout(res,2000); }); }catch(e){}
-    let start=Date.now();
-    while(Date.now()-start<2500){
-      ctx.fillStyle="#000"; ctx.fillRect(0,0,1280,720);
-      try{ ctx.drawImage(img,0,0,1280,720); }catch(e){}
-      // Draw CUT character with scene filter - oval cut in video too
-      try{
-        ctx.save();
-        ctx.beginPath(); ctx.ellipse(200, 520, 160, 210, 0, 0, Math.PI*2); ctx.clip();
-        // Apply scene color via globalAlpha + overlay
-        ctx.drawImage(charImg, 40, 310, 320, 410);
-        ctx.restore();
-        // Scene tint overlay on character area only
-        if(i===0){ ctx.fillStyle="rgba(255,150,0,0.18)"; ctx.fillRect(40,310,320,410); }
-        if(i===4){ ctx.fillStyle="rgba(255,215,0,0.25)"; ctx.fillRect(40,310,320,410); }
-        if(i===3||i===5){ ctx.fillStyle="rgba(0,0,80,0.25)"; ctx.fillRect(40,310,320,410); }
-        ctx.fillStyle="#FFD700"; ctx.fillRect(40,700,320,20);
-      }catch(e){}
-      ctx.fillStyle="#FFD700"; ctx.font="bold 28px Arial"; ctx.fillText(`VUNO ROYAL 👑 ✂️ • SCENE ${i+1}/6`,40,60);
-      ctx.fillStyle="#fff"; ctx.font="bold 28px Arial"; ctx.fillText(sceneImages[i].text.substring(0,65),40,620);
-      await new Promise(r=>setTimeout(r,100));
-    }
-  }
-  recorder.stop();
-}
-</script>
-</body>
-</html>
+    document.getElementById('cutStatus').textContent="✅ Photo uploaded! Now press 🤖 AI AUTO-CUTOUT.";
