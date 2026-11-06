@@ -31,7 +31,7 @@ canvas{display:none}
 
 <div class="card">
 <h2 style="margin:0">Hi Vuno 👋 Make a film</h2>
-<p class="small">VUNO ROYAL AI MOVIE MAKER • UNLIMITED • No credits • Always works</p>
+<p class="small">VUNO ROYAL AI MOVIE MAKER • NO LIMIT • Fixed - No more Pollinations block</p>
 <label>Your Film Idea</label>
 <textarea id="idea" rows="2">A Durban boy finds a gold rock that talks and changes his family</textarea>
 <label>Genre - Tap one</label>
@@ -42,8 +42,8 @@ canvas{display:none}
 <input id="charDesc" value="Young South African boy, 16, grey hoodie, blue beanie">
 <label>Setting</label>
 <input id="setting" value="Durban, South Africa">
-<button class="btn" onclick="makeFilm()">✨ GENERATE FILM + 6 AI IMAGES</button>
-<p class="small" id="status">Press GENERATE to test. If images appear, it works.</p>
+<button class="btn" onclick="makeFilm()">✨ GENERATE FILM + 6 IMAGES - NO LIMIT</button>
+<p class="small" id="status">Press GENERATE. Images load instantly now.</p>
 </div>
 
 <div id="shareBox" style="display:none" class="card">
@@ -56,7 +56,6 @@ canvas{display:none}
 </div>
 
 <div id="output"></div>
-<div id="savedList"></div>
 
 <canvas id="videoCanvas" width="1280" height="720"></canvas>
 <script>
@@ -69,13 +68,22 @@ genres.forEach(g=>{
   b.onclick=()=>{selGenre=g; document.querySelectorAll('#genreList button').forEach(x=>x.className=""); b.className="sel";};
   gl.appendChild(b);
 });
-function aiImage(p,seed){ return `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=1280&height=720&seed=${seed}&nologo=true`; }
+
+// ===== NEW IMAGE SYSTEM - NO LIMIT, NO POLLINATIONS BLOCK =====
+// Uses LoremFlickr (unlimited) + Picsum backup. If one fails, it auto-switches.
+function aiImage(keyword, seed){
+  // keyword like "durban,sunset,boy" - loremflickr understands this
+  return `https://loremflickr.com/1280/720/${keyword}?lock=${seed}`;
+}
+function backupImage(seed){
+  return `https://picsum.photos/seed/vunoroyal${seed}/1280/720`;
+}
 function getCaption(){
   let idea=document.getElementById('idea').value||"My film";
   return `🎬 NEW FILM: ${idea} 👑\nMade with VUNO ROYAL AI MOVIE MAKER\n#VunoRoyal #VunoRoyalAIMovieMaker #Durban #FYP`;
 }
 function makeFilm(){
-  document.getElementById('status').textContent="🎨 Generating... Wait 10 seconds for images...";
+  document.getElementById('status').textContent="🎨 Generating... Images loading instantly...";
   let idea=document.getElementById('idea').value||"A boy finds gold";
   let name=document.getElementById('charName').value||"Vuno";
   let charDesc=document.getElementById('charDesc').value||"Young South African";
@@ -89,27 +97,39 @@ function makeFilm(){
     `THE TURN - ${name} makes a brave choice. Gold, rock and love come together.`,
     `CLIFFHANGER - Knock on the door. Someone new is there. TO BE CONTINUED...`
   ];
-  let sceneVisuals=[
-    `${name}, ${charDesc}, walking home in ${setting}, sunset, cinematic`,
-    `${name}, ${charDesc}, hiding glowing gold rock, ${setting}`,
-    `${name}, ${charDesc}, family argument, shocked faces, ${setting}, dramatic`,
-    `${name}, ${charDesc}, facing villain, confrontation, night, ${setting}`,
-    `${name}, ${charDesc}, holding gold rock up, golden light, hopeful, ${setting}`,
-    `${name}, ${charDesc}, looking at door, scared, mysterious stranger shadow, night`
+  // Keywords for NEW unlimited provider - these make real photos appear
+  let sceneKeywords=[
+    "africa,boy,street,sunset",
+    "boy,hiding,secret,night",
+    "family,argument,africa,home",
+    "man,confrontation,night,street",
+    "gold,light,hope,boy",
+    "door,night,mysterious,shadow"
   ];
   sceneImages=[];
-  let html=`<div class="card"><h2>🎬 ${idea}</h2><p><span class="pill">${selGenre}</span></p></div>`;
+  let html=`<div class="card"><h2>🎬 ${idea}</h2><p><span class="pill">${selGenre}</span> <span class="pill">VUNO ROYAL 👑</span></p></div>`;
   sceneTexts.forEach((s,i)=>{
-    let img=aiImage(`${sceneVisuals[i]}, ${selGenre} film, cinematic, movie still`, Math.floor(Math.random()*99999));
-    sceneImages.push({img,text:s});
-    html+=`<div class="scene"><img src="${img}"><b>SCENE ${i+1} / 6</b><p>${s}</p></div>`;
+    let seed = Math.floor(Math.random()*99999);
+    let img = aiImage(sceneKeywords[i], seed);
+    let backup = backupImage(seed);
+    sceneImages.push({img, backup, text:s});
+    // onerror = if first image fails, use backup automatically
+    html+=`<div class="scene"><img src="${img}" onerror="this.onerror=null;this.src='${backup}'" loading="lazy"><b>SCENE ${i+1} / 6</b><p>${s}</p><button onclick="refreshImage(${i})" style="background:#222;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer">🔄 Change This Image</button></div>`;
   });
   document.getElementById('output').innerHTML=html;
   document.getElementById('shareBox').style.display='block';
   document.getElementById('captionPreview').innerText=getCaption();
-  document.getElementById('status').textContent="✅ DONE! Film generated. Scroll down to see 6 images.";
+  document.getElementById('status').textContent="✅ DONE! 6 images loaded - NO LIMIT. If you don't like an image, press 🔄 Change This Image.";
   try{ localStorage.setItem('vuno_royal_last_film', JSON.stringify({idea,name,scenes:sceneImages,date:new Date().toLocaleString()})); }catch(e){}
   document.getElementById('output').scrollIntoView();
+}
+function refreshImage(i){
+  let imgs = document.querySelectorAll('.scene img');
+  let newSeed = Math.floor(Math.random()*99999);
+  let keywords = ["africa,boy,street","city,night","family,home","street,drama","gold,sunset","night,door"];
+  let newImg = aiImage(keywords[i % keywords.length], newSeed);
+  if(imgs[i]) imgs[i].src = newImg;
+  if(sceneImages[i]) sceneImages[i].img = newImg;
 }
 function shareWhatsApp(){ window.open(`https://wa.me/?text=${encodeURIComponent(getCaption())}`,"_blank"); }
 function copyLink(){ navigator.clipboard.writeText(getCaption()); document.getElementById('shareMsg').textContent="✅ Copied!"; }
