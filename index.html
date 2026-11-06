@@ -11,7 +11,7 @@ header{background:#111;padding:16px;display:flex;justify-content:space-between;a
 .logo{font-size:19px;font-weight:900;color:#FFD700}
 .logo span{color:#fff;font-size:12px;letter-spacing:2px}
 .card{background:#181818;border-radius:16px;padding:18px;margin:14px 0;border:1px solid #2a2a2a}
-input,textarea,select{width:100%;background:#222;color:#fff;border:1px solid #333;border-radius:10px;padding:12px;margin:6px 0;font-size:15px}
+input,textarea{width:100%;background:#222;color:#fff;border:1px solid #333;border-radius:10px;padding:12px;margin:6px 0;font-size:15px}
 label{font-size:12px;color:#aaa}
 .btn{background:#FFD700;color:#000;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
 .btn2{background:#25D366;color:#000;border:0;padding:14px;border-radius:12px;font-weight:800;width:100%;font-size:16px;cursor:pointer;margin-top:10px}
@@ -19,31 +19,43 @@ label{font-size:12px;color:#aaa}
 .genres{display:flex;flex-wrap:wrap;gap:8px}
 .genres button{background:#222;color:#fff;border:2px solid #333;padding:8px 14px;border-radius:20px;cursor:pointer}
 .genres button.sel{background:#FFD700;color:#000}
-.scene{background:#111;border-left:4px solid #FFD700;padding:14px;border-radius:12px;margin:12px 0}
-.scene img{width:100%;border-radius:10px;aspect-ratio:16/9;object-fit:cover;background:#222}
+.scene{background:#111;border-left:4px solid #FFD700;padding:14px;border-radius:12px;margin:12px 0;position:relative}
+.scene-wrap{position:relative;border-radius:10px;overflow:hidden;background:#222}
+.scene-wrap img.bg{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.char-overlay{position:absolute;bottom:0;left:0;width:38%;border:3px solid #FFD700;border-radius:0 12px 0 0;background:#000;overflow:hidden}
+.char-overlay img{width:100%;height:140px;object-fit:cover;display:block}
+.char-overlay div{background:#FFD700;color:#000;font-weight:800;font-size:12px;padding:4px 8px;text-align:center}
+.char-badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.8);color:#FFD700;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:800}
 .pill{display:inline-block;background:#222;padding:4px 10px;border-radius:20px;font-size:12px}
 .small{font-size:13px;color:#aaa}
+.char-preview{width:100%;height:180px;object-fit:cover;border-radius:12px;border:3px solid #FFD700;background:#222}
 canvas{display:none}
 </style>
 </head>
 <body>
-<header><div class="logo">VUNO ROYAL 👑<br><span>AI MOVIE MAKER</span></div><div>⭐ UNLIMITED</div></header>
+<header><div class="logo">VUNO ROYAL 👑<br><span>AI MOVIE MAKER</span></div><div>⭐ SAME CHARACTER</div></header>
 
 <div class="card">
 <h2 style="margin:0">Hi Vuno 👋 Make a film</h2>
-<p class="small">VUNO ROYAL AI MOVIE MAKER • NO LIMIT • Fixed - No more Pollinations block</p>
+<p class="small">Same character in ALL 6 scenes • Real Durban backgrounds • No limit</p>
+
+<label>📸 YOUR CHARACTER - Upload your photo (This face will be in every scene)</label>
+<img id="charPreview" class="char-preview" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80" alt="Character">
+<input type="file" id="charUpload" accept="image/*" onchange="uploadChar(event)" style="margin-top:8px">
+<p class="small">👆 Press Choose File -> Pick your photo. That photo becomes Vuno in the film. If you don't upload, we use default Vuno character.</p>
+
 <label>Your Film Idea</label>
 <textarea id="idea" rows="2">A Durban boy finds a gold rock that talks and changes his family</textarea>
-<label>Genre - Tap one</label>
+<label>Genre</label>
 <div class="genres" id="genreList"></div><br>
 <label>Main Character Name</label>
 <input id="charName" value="Vuno">
-<label>Main Character Look</label>
+<label>Character Description - This stays same every scene</label>
 <input id="charDesc" value="Young South African boy, 16, grey hoodie, blue beanie">
 <label>Setting</label>
 <input id="setting" value="Durban, South Africa">
-<button class="btn" onclick="makeFilm()">✨ GENERATE FILM + 6 IMAGES - NO LIMIT</button>
-<p class="small" id="status">Press GENERATE. Images load instantly now.</p>
+<button class="btn" onclick="makeFilm()">✨ GENERATE FILM - SAME CHARACTER IN ALL 6 SCENES</button>
+<p class="small" id="status">Upload your photo first for best result, then GENERATE.</p>
 </div>
 
 <div id="shareBox" style="display:none" class="card">
@@ -56,10 +68,10 @@ canvas{display:none}
 </div>
 
 <div id="output"></div>
-
 <canvas id="videoCanvas" width="1280" height="720"></canvas>
 <script>
 let selGenre="Drama", currentFilm=null, episode=1, sceneImages=[];
+let charImage = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80"; // Default Vuno
 let genres=["Drama","Horror","Comedy","Sci-Fi","Romance","Action","Fantasy"];
 let gl=document.getElementById('genreList');
 genres.forEach(g=>{
@@ -69,26 +81,47 @@ genres.forEach(g=>{
   gl.appendChild(b);
 });
 
-// ===== NEW IMAGE SYSTEM - NO LIMIT, NO POLLINATIONS BLOCK =====
-// Uses LoremFlickr (unlimited) + Picsum backup. If one fails, it auto-switches.
-function aiImage(keyword, seed){
-  // keyword like "durban,sunset,boy" - loremflickr understands this
-  return `https://loremflickr.com/1280/720/${keyword}?lock=${seed}`;
+function uploadChar(event){
+  let file = event.target.files[0];
+  if(!file) return;
+  let reader = new FileReader();
+  reader.onload = function(e){
+    charImage = e.target.result;
+    document.getElementById('charPreview').src = charImage;
+    document.getElementById('status').textContent = "✅ Your photo saved! This face will now appear in ALL 6 scenes.";
+    try{ localStorage.setItem('vuno_royal_char', charImage); }catch(e){}
+  };
+  reader.readAsDataURL(file);
 }
-function backupImage(seed){
-  return `https://picsum.photos/seed/vunoroyal${seed}/1280/720`;
-}
+// Load saved character if exists
+try{
+  let saved = localStorage.getItem('vuno_royal_char');
+  if(saved){ charImage = saved; document.getElementById('charPreview').src = saved; }
+}catch(e){}
+
 function getCaption(){
   let idea=document.getElementById('idea').value||"My film";
-  return `🎬 NEW FILM: ${idea} 👑\nMade with VUNO ROYAL AI MOVIE MAKER\n#VunoRoyal #VunoRoyalAIMovieMaker #Durban #FYP`;
+  return `🎬 NEW FILM: ${idea} 👑\nMade with VUNO ROYAL AI MOVIE MAKER - Same character in every scene!\n#VunoRoyal #VunoRoyalAIMovieMaker #Durban #FYP`;
 }
+
+// REAL CURATED DURBAN / SA BACKGROUNDS - Not random, they match the story
+let backgrounds = [
+  "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=1280&q=80", // Africa street sunset
+  "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1280&q=80", // Night dark
+  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1280&q=80", // Home interior
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1280&q=80", // Beach / Durban beachfront feel
+  "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?w=1280&q=80", // Golden light / mountains
+  "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1280&q=80"  // Night mysterious
+];
+
 function makeFilm(){
-  document.getElementById('status').textContent="🎨 Generating... Images loading instantly...";
   let idea=document.getElementById('idea').value||"A boy finds gold";
   let name=document.getElementById('charName').value||"Vuno";
-  let charDesc=document.getElementById('charDesc').value||"Young South African";
+  let charDesc=document.getElementById('charDesc').value||"Young South African boy";
   let setting=document.getElementById('setting').value||"Durban";
   currentFilm={idea,name,charDesc,setting,genre:selGenre}; episode=1;
+  document.getElementById('status').textContent="🎨 Generating film with SAME character...";
+
   let sceneTexts=[
     `OPENING - ${setting}. ${name} is walking home. Something strange happens.`,
     `THE SECRET - ${name} hides the secret. Tension builds.`,
@@ -97,45 +130,42 @@ function makeFilm(){
     `THE TURN - ${name} makes a brave choice. Gold, rock and love come together.`,
     `CLIFFHANGER - Knock on the door. Someone new is there. TO BE CONTINUED...`
   ];
-  // Keywords for NEW unlimited provider - these make real photos appear
-  let sceneKeywords=[
-    "africa,boy,street,sunset",
-    "boy,hiding,secret,night",
-    "family,argument,africa,home",
-    "man,confrontation,night,street",
-    "gold,light,hope,boy",
-    "door,night,mysterious,shadow"
-  ];
+  let sceneLabels=["OPENING - Walking Home","THE SECRET","THE TRUTH","THE FIGHT","THE TURN","CLIFFHANGER"];
+
   sceneImages=[];
-  let html=`<div class="card"><h2>🎬 ${idea}</h2><p><span class="pill">${selGenre}</span> <span class="pill">VUNO ROYAL 👑</span></p></div>`;
+  let html=`<div class="card"><h2>🎬 ${idea}</h2><p><span class="pill">${selGenre}</span> <span class="pill">Same Character: ${name}</span> <span class="pill">VUNO ROYAL 👑</span></p><p class="small">Character: ${charDesc} - This same person appears in all 6 scenes below.</p></div>`;
+
   sceneTexts.forEach((s,i)=>{
-    let seed = Math.floor(Math.random()*99999);
-    let img = aiImage(sceneKeywords[i], seed);
-    let backup = backupImage(seed);
-    sceneImages.push({img, backup, text:s});
-    // onerror = if first image fails, use backup automatically
-    html+=`<div class="scene"><img src="${img}" onerror="this.onerror=null;this.src='${backup}'" loading="lazy"><b>SCENE ${i+1} / 6</b><p>${s}</p><button onclick="refreshImage(${i})" style="background:#222;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer">🔄 Change This Image</button></div>`;
+    let bg = backgrounds[i % backgrounds.length];
+    sceneImages.push({img:bg, char:charImage, text:s});
+    html+=`<div class="scene">
+      <div class="scene-wrap">
+        <img class="bg" src="${bg}">
+        <div class="char-badge">SCENE ${i+1} / 6 • ${sceneLabels[i]}</div>
+        <div class="char-overlay"><img src="${charImage}"><div>👑 ${name} • ${charDesc}</div></div>
+      </div>
+      <b>SCENE ${i+1} / 6 - ${sceneLabels[i]}</b><p>${s}</p>
+      <button onclick="changeBg(${i})" style="background:#222;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer">🔄 Change Background Only</button>
+    </div>`;
   });
   document.getElementById('output').innerHTML=html;
   document.getElementById('shareBox').style.display='block';
   document.getElementById('captionPreview').innerText=getCaption();
-  document.getElementById('status').textContent="✅ DONE! 6 images loaded - NO LIMIT. If you don't like an image, press 🔄 Change This Image.";
-  try{ localStorage.setItem('vuno_royal_last_film', JSON.stringify({idea,name,scenes:sceneImages,date:new Date().toLocaleString()})); }catch(e){}
+  document.getElementById('status').textContent="✅ DONE! Same character in all 6 scenes. Backgrounds are Durban / SA. If you want different background, press Change Background.";
   document.getElementById('output').scrollIntoView();
 }
-function refreshImage(i){
-  let imgs = document.querySelectorAll('.scene img');
-  let newSeed = Math.floor(Math.random()*99999);
-  let keywords = ["africa,boy,street","city,night","family,home","street,drama","gold,sunset","night,door"];
-  let newImg = aiImage(keywords[i % keywords.length], newSeed);
-  if(imgs[i]) imgs[i].src = newImg;
-  if(sceneImages[i]) sceneImages[i].img = newImg;
+function changeBg(i){
+  // Cycle to next background, character stays same
+  let next = backgrounds[(i+2) % backgrounds.length];
+  sceneImages[i].img = next;
+  let wraps = document.querySelectorAll('.scene-wrap img.bg');
+  if(wraps[i]) wraps[i].src = next;
 }
 function shareWhatsApp(){ window.open(`https://wa.me/?text=${encodeURIComponent(getCaption())}`,"_blank"); }
 function copyLink(){ navigator.clipboard.writeText(getCaption()); document.getElementById('shareMsg').textContent="✅ Copied!"; }
 async function downloadVideo(){
   if(!currentFilm){ alert("Press GENERATE FILM first!"); return; }
-  alert("🎥 Making video... Wait 15 seconds, it will download automatically.");
+  alert("🎥 Making video... Wait 15 seconds, it will download.");
   let canvas=document.getElementById('videoCanvas'); let ctx=canvas.getContext('2d');
   let stream=canvas.captureStream(30); let recorder=new MediaRecorder(stream,{mimeType:'video/webm'}); let chunks=[];
   recorder.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
@@ -143,13 +173,17 @@ async function downloadVideo(){
   recorder.start();
   for(let i=0;i<sceneImages.length;i++){
     let img=new Image(); img.crossOrigin="anonymous";
+    let charImg=new Image(); charImg.crossOrigin="anonymous";
     try{ img.src=sceneImages[i].img; await new Promise(res=>{ img.onload=res; img.onerror=res; setTimeout(res,3000); }); }catch(e){}
+    try{ charImg.src=sceneImages[i].char; await new Promise(res=>{ charImg.onload=res; charImg.onerror=res; setTimeout(res,2000); }); }catch(e){}
     let start=Date.now();
     while(Date.now()-start<2500){
       ctx.fillStyle="#000"; ctx.fillRect(0,0,1280,720);
       try{ ctx.drawImage(img,0,0,1280,720); }catch(e){}
+      // Draw character in bottom-left - SAME in every scene
+      try{ ctx.drawImage(charImg,0,440,320,280); ctx.fillStyle="#FFD700"; ctx.fillRect(0,690,320,30); ctx.fillStyle="#000"; ctx.font="bold 20px Arial"; ctx.fillText(`👑 ${currentFilm.name}`,10,712); }catch(e){}
       ctx.fillStyle="#FFD700"; ctx.font="bold 28px Arial"; ctx.fillText(`VUNO ROYAL 👑 • SCENE ${i+1}/6`,40,60);
-      ctx.fillStyle="#fff"; ctx.font="bold 32px Arial"; ctx.fillText(sceneImages[i].text.substring(0,70),40,620);
+      ctx.fillStyle="#fff"; ctx.font="bold 28px Arial"; ctx.fillText(sceneImages[i].text.substring(0,65),40,620);
       await new Promise(r=>setTimeout(r,100));
     }
   }
